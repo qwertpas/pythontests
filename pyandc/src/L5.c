@@ -15,7 +15,10 @@ int main(){
 
     printf("sec: %d \n", sec);
 
-    for(int i=0; i < 3; i++){
+    int i;
+    for(i=0; i < 3; i++){
         printf("secrets[%d]: %d \n", i, secrets[i]);
+        if(i == 1) break;
     }
+    printf("i: %d", i);
 }

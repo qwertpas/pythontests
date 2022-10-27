@@ -8,12 +8,29 @@ from fractions import Fraction
 
 np.set_printoptions(precision=3, suppress=True)
 
+'''     JUST MATH       '''
+
+def to_frac(v):
+    fracs = []
+    try:
+        for val in v:
+            fracs.append(Fraction(val).limit_denominator())
+    except:
+        return Fraction(v).limit_denominator()
+    return fracs
+
+
+def cot(theta):
+    return 1/tan(theta)
 
 def cross(a:np.ndarray,b:np.ndarray)->np.ndarray:
     '''
     workaround for bug with np.cross() that makes code unreachable
     '''
     return np.cross(a,b)
+
+
+'''  ROBOTICS    '''
 
 def skew(w):
     '''
@@ -70,14 +87,6 @@ def get_axis_angle_from_rotation(R):
     return axis, angle
 
 
-# w = [0, 0.866, 0.5]
-# theta = radians(180)
-# R = get_rotation_from_axis_angle(axis=skew(w), angle=theta)
-# print(R)
-# W, theta = get_axis_angle_from_rotation(R)
-# print(W, unskew(W), degrees(theta))
-
-
 def format_transformation(R, p):
     '''
     Format a transformation T (4x4 matrix) from rotation R (3x3 matrix) and position (3 vector).\n
@@ -102,7 +111,8 @@ def extract_R_p_from_transformation(T):
 def transform_point(T, x):
     '''
     Evaluates Tx = Rx + p = T@[x,1], where T = [R, p], a rotation R and displacement p. Left multiplication means rotate then displace.
-    Appending a 1 to the 3 vector puts it in homogenous coordinates so it is compatible with transformation matrices
+    Appending a 1 to the 3 vector puts it in homogenous coordinates so it is compatible with transformation matrices.
+    Will truncate the last 1 and output the transformed 3 vector.
     T: 4x4 transformation matrix
     x: 3x3 vector position in space
     (Modern Robotics 3.65)
@@ -115,7 +125,8 @@ def transform_point(T, x):
 def adjoint(T):
     '''
     Get [Adj_Tsb] (6x6 matrix) which converts twists in the b frame to twists in the s frame (as 6 vectors): twist_s = [Adj_Tsb] @ twist_b  
-    (Modern Robotics 3.83)
+    (Modern Robotics 3.83) \n
+    Also works for converting screws from one frame to another.
     '''
     T = np.array(T).reshape((4, 4))
     R, p = extract_R_p_from_transformation(T)
@@ -132,7 +143,9 @@ def format_twist_matrix(w, v):
     w and v can be in body or space frame, and the screw will be in the corresponding frame.
     [V] = [[ω] v]
           [ 0  0]
-    (Modern Robotics 3.81)
+    (Modern Robotics 3.81) \n
+    Use the exact same formula for representing the screw axis, because a screw is a normalized twist, where 
+    |ω| = 1 or (|ω|=0 and |v|=1)
     '''
     W = skew(w)
     v = np.reshape(v, (3, 1))
@@ -151,59 +164,61 @@ def extract_twist_vector_from_matrix(Twist):
     twist = np.concatenate((w, v))
     return twist
 
-# #example 3.23, the tricycle
-# R_sb = np.array([ #car frame rotation in space frame
-#     [-1, 0, 0],
-#     [0, 1, 0],
-#     [0, 0, -1]
-# ])
-# p_sb = np.array((4, 0.4, 0)) #position of car in space frame
-# r_s = np.array((2, -1, 0))
-# T_sb = format_transformation(R_sb, p_sb)
-# r_b = transform_point(np.linalg.inv(T_sb), r_s)
-# w_s = np.array((0, 0, 2))
-# w_b = np.array((0, 0, -2))
-# v_s = cross(r_s, w_s)       #v = r x ω
-# v_b = cross(r_b, w_b)
-# twist_s = np.concatenate((w_s, v_s))
-# twist_b = np.concatenate((w_b, v_b))
-# print(f"twist_s: {twist_s}, twist_b: {twist_b}")
-# Adj_Tsb = adjoint(T_sb)
-# print(Adj_Tsb @ twist_b)    #show that Adj can convert body twist to space twist
+
+def get_twist_from_screw_qsh(thetadot, q, s, h):
+    '''
+    (Modern Robotics 3.3.2.2)
+    Just as an angular velocity ω can be viewed as ω̂θ̇, where ω̂ is the unit rotation
+    axis and θ̇ is the rate of rotation about that axis, a twist can be interpreted
+    in terms of a screw axis S and a velocity θ̇ about the screw axis.
+    thetadot: angular velocity (scalar)
+    q: any point on the screw axis (3 vector)
+    s: unit vector in direction of screw axis (3 vector)
+    h: screw pitch which is linear velocity/angular velocity (scalar)
+    '''
+    s = s / np.linalg.norm(s) #normalize just in case
+    w = s*thetadot #rotation axis scaled by angular velocity
+    v = cross(-s*thetadot, q) + h*s*thetadot
+    twist = np.concatenate((w, v))
+    return twist
 
 
+def get_transformation_from_screw_axis_angle(screw_axis, angle):
+    '''
+    Evaluate exp([S]θ) to get the transformation of following the screw axis for θ distance
+    screw_axis: 6 vector consisting of [ω v], where ω is a unit vector or (ω=0 and |v|=1)
+    angle: scalar 
+    (Modern Robotics 3.88)
+    '''
+    screw_axis = np.array(screw_axis).flatten()
+    W = skew(screw_axis[0:3])
+    v = screw_axis[3:6]
+    theta = angle
+    R = get_rotation_from_axis_angle(W, theta)
+    I = np.eye(3)
+    topright = (I*theta + (1 - cos(theta))*W + (theta - sin(theta))*(W@W)) @ v
+    topright = topright.reshape((3, 1))
+    toprow = np.hstack((R, topright))
+    lowrow = np.array([0, 0, 0, 1])
+    T = np.vstack((toprow, lowrow))
+    return T
 
-
-def get_screw_pitch(omega, vel):
-    return vel/omega
-
-def normalize(v):
-    mag = np.linalg.norm(v)
-    return v/mag
-
-def to_frac(v):
-    fracs = []
-    try:
-        for val in v:
-            fracs.append(Fraction(val).limit_denominator())
-    except:
-        return Fraction(v).limit_denominator()
-    return fracs
-
-
-
-
-
-def cot(theta):
-    return 1/tan(theta)
-
-#eqn 3.92, matrix log for rigid body
-def get_S_theta(R, p):
-    theta = get_theta(R)
-    omega = logm(R)
-    G_inv = (1/theta)*np.eye(3) - (1/2)*omega + (1/theta - 1/2*cot(theta/2))*(omega@omega)
+def get_screw_axis_angle_from_transformation(T):
+    '''
+    Matrix log for a rigid motion: get the screw axis and angle for transformation T containing rotation R and displacement p
+    (Modern Robotics eq 3.92)
+    '''
+    T = np.array(T).reshape((4,4))
+    R, p = extract_R_p_from_transformation(T)
+    W, theta = get_axis_angle_from_rotation(R)
+    G_inv = (1/theta)*np.eye(3) - (1/2)*W + (1/theta - 1/2*cot(theta/2))*(W@W)
     v = G_inv @ p
-    S = format_screw(omega, v)
+    w = unskew(W)
+    S = format_twist_matrix(w, v)
     return S, theta
 
-origin = format_transformation(R=np.eye(3), p=np.zeros(3))
+
+
+
+
+
