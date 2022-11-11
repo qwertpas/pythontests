@@ -1,5 +1,3 @@
-from multiprocessing.connection import wait
-from tkinter import W
 import numpy as np
 from numpy import sin, cos, tan, pi, arccos, arcsin, sqrt, radians, degrees
 from scipy.linalg import expm, logm
@@ -219,6 +217,22 @@ def get_screw_axis_angle_from_transformation(T):
 
 
 
+# import numpy as np
+# import scipy
+# from sympy import *
 
+# x, y = symbols('x y')
+# expr = x + 2*y
+# print(expr.simplify())
+
+# ''' 
+# L = K - P 
+# τ_i = d/dt(δL/δθ̇_i) - δL/δθ_i
+# '''
+
+# m2, L1, L2, theta1_dot, theta2_dot, theta2 = symbols('m2, L1, L2, theta1_dot, theta2_dot, theta2')
+# L = m2 * L1 * L2 * theta1_dot * theta2_dot * cos(theta2)
+
+# print(diff(diff(L, theta1_dot), t))
 
 
