@@ -50,27 +50,32 @@ def spherical_invk(R):
     https://www.slideserve.com/marva/ch-3-inverse-kinematics-ch-4-velocity-kinematics
     '''
     shift = np.array([ #convert to whatever frame harvard uses
+        [0, 0, 1],
         [1, 0, 0],
         [0, 1, 0]
     ])
     R = shift@R
 
+    print(R)
+
     s5 = np.sqrt(1 - R[2,2]**2)
     
     #first solution s5 > 0:
-    theta5 = np.arctan2(R[0,2], R[1,2])
-    phi1 = np.arctan2(R[2,2], s5)
-    psi = np.arctan2(-R[2,0], R[2,1])
+    theta4 = np.arctan2(R[0,2], R[1,2]) - pi/2
+    theta5 = np.arctan2(R[2,2], s5)
+    theta6 = np.arctan2(-R[2,0], R[2,1])
     sol1 = [theta4, theta5, theta6]
+    sol1 = [-signed_mod(ang, 2*pi) for ang in sol1]
 
-    theta5 = np.arctan2(R[0,2], R[1,2])
-    phi1 = np.arctan2(R[2,2], np.sqrt(1 - R[2,2]**2))
-    psi = np.arctan2(-R[2,0], R[2,1])
-    sol1 = [theta4, theta5, theta6]
+    #first solution s5 < 0:
+    theta4 = np.arctan2(-R[0,2], -R[1,2]) - pi/2
+    theta5 = np.arctan2(R[2,2], -s5)
+    theta6 = np.arctan2(R[2,0], -R[2,1])
+    sol2 = [theta4, theta5, theta6]
+    sol2 = [-signed_mod(ang, 2*pi) for ang in sol2]
 
 
-    thetas = ([theta1, phi, psi], [theta2, phi, psi])
-    return thetas
+    return sol1, sol2
 
 
 fig, ax = init_3d_plot(size=(8,7))    
@@ -103,7 +108,7 @@ def update(val=0):
     p0 = np.array([0, 0, -0.1])
     p1 = R@p0
 
-    print(f"R: {R}")
+    # print(f"R: {R}")
     print(spherical_invk(R))
 
     ax.clear()

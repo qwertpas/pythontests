@@ -32,6 +32,9 @@ def norm(v):
 def normalize(v):
     return v / norm(v)
 
+def signed_mod(num, mod):
+    return (num + mod/2)%mod - mod/2
+
 
 '''  ROBOTICS    '''
 
