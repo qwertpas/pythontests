@@ -42,7 +42,6 @@ def update(val=0):
     R_joy_end = get_rotation_from_axis_angle(axis=skew(normalize([s[3], s[4], s[5]])), angle=s[6])
 
 
-
     ang_joy_end = R_joy_end[:,1]
 
     p_joy_elb = p_joy_end - L_forearm * ang_joy_end
@@ -55,9 +54,6 @@ def update(val=0):
     )
 
     p_sat_end = p_sat_elb + ang_joy_end*L_forearm
-
-
-
 
 
 

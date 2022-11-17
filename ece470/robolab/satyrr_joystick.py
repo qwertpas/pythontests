@@ -7,7 +7,7 @@ dir = os.path.dirname(__file__)
 sys.path.insert(0, dir+'/../')   #allow imports from parent directory
 
 from util import *
-from plotcube import plot_cube
+from plotcube import *
 
 
 
@@ -22,6 +22,11 @@ L_shoulder_z = 0.168 #downwards
 L_arm = 0.313 #upper arm length
 L_forearm = 0.339 # lower arm length
 L_hand = 0.078 #width of the hand that goes inwards
+
+
+L_sat_forearm = 0.2115
+L_sat_arm = 0.11945
+L_sat_shoulder_from_body = 0.15/2
 
 def rotMatrix(axis, theta):
     if(axis == 'x'):
@@ -89,9 +94,24 @@ def forward_kinematics(angles):
 
     return HTM_BS1, HTM_BS2, HTM_BS3, HTM_BE, HTM_BeF
 
+def satyrr_joystick_invk(R_joy_end, p_joy_end):
+    ang_joy_end = R_joy_end[:,1]
 
-fig = plt.figure(figsize=(5, 5))
-ax = plt.axes(projection='3d')
+
+    p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
+
+    p_sat_elb, _ = sphere_intersect(
+        line_origin=p_joy_end,
+        line_dir=p_joy_end,
+        sphere_center=(0,0,0),
+        sphere_radius=L_sat_arm
+    )
+
+    p_sat_end = p_sat_elb + ang_joy_end*L_forearm
+    return p_sat_elb
+
+
+fig, ax = init_3d_plot(size=(8,7))    
 
 def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     R_shoulder, p_shoulder = extract_R_p_from_transformation(T_shoulder)
@@ -100,22 +120,37 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     R_elbow, p_elbow = extract_R_p_from_transformation(T_elbow)
     R_end, p_end = extract_R_p_from_transformation(T_end)
 
-    points = np.array([p_shoulder, p_shoulder2, p_shoulder3, p_elbow, p_end]).T
 
-    # ax.set_aspect('equal', adjustable='box')
+    p_sat_elb = satyrr_joystick_invk(R_end, p_end)
+
+
     ax.clear()
-    ax.set_xlim(-0.5, 0.5)
-    ax.set_ylim(-0.5, 0.5)
-    ax.set_zlim(-0.5, 0.5)
-    ax.scatter3D(0, 0, 0, c='orange')
-    ax.plot3D(points[0], points[1], points[2])
-    L_b = L_shoulder_from_body*2
-    cube_definition = [
-        (-L_b/2, -L_b/2, -0.1), (0-L_b/2,L_b-L_b/2,0-0.1), (L_b-L_b/2,0-L_b/2,0-0.1), (0-L_b/2,0-L_b/2,0.2-0.1)
-    ]
-    plot_cube(ax, cube_definition)
+    w = 0.02
 
-    # ax.scatter3D(T_M[0][3], T_M[1][3], T_M[2][3])
+    #joystick
+    plot_link(ax, R_shoulder, p_shoulder, size=(w, w, w))
+    plot_link(ax, R_shoulder2, p_shoulder2, size=(w, w, w))
+    plot_link(ax, R_shoulder3, p_shoulder3, size=(w, w, -L_arm))
+    plot_link(ax, R_elbow, p_elbow, size=(w, w, -L_forearm))
+    plot_link(ax, R_end, p_end, size=(w, w, w))
+    plot_link(ax, np.eye(3), (0, 0, -0.25), size=(0.1, L_shoulder_from_body, 0.5), color=(0, 0, 1, 0.1))
+
+    #satyrr
+    sat_right_shoulder = np.array([0, L_sat_shoulder_from_body, 0])
+    plot_link(ax, R_end, p_sat_elb - sat_right_shoulder, size=(w, w, -L_sat_forearm), color='red')
+    plot_link(ax, np.eye(3), (0, 0, -0.25), size=(0.05, L_sat_shoulder_from_body, 0.3), color=(1, 0, 0, 0.1))
+
+    # draw sphere
+    r = L_sat_arm
+    u, v = np.mgrid[0:2*np.pi:10j, 0:np.pi:10j]
+    x = np.cos(u)*np.sin(v)*r
+    y = np.sin(u)*np.sin(v)*r - L_sat_shoulder_from_body
+    z = np.cos(v)*r
+    
+    ax.plot_wireframe(x, y, z, color="gray")
+    ax.plot_wireframe(x, -y, z, color="gray")
+
+    draw_labels(ax, cube_lim=0.5)
 
 num_sliders = 4
 sliders = []
