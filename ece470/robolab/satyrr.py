@@ -1,10 +1,11 @@
+from matplotlib.widgets import Slider
 import numpy as np
 from numpy import sin, cos, eye, array, pi
 import os, sys
 dir = os.path.dirname(__file__)
 sys.path.insert(0, dir+'/../')   #allow imports from parent directory
 from util import *
-from plotcube import plot_cube
+from plotcube import *
 
 np.set_printoptions(precision=2, suppress=True, threshold=5)
 
@@ -77,15 +78,13 @@ def forward_kinematics(angles):
     return HTM_BS1, HTM_BS2, HTM_BS3, HTM_BE, HTM_BeF
 
 
-fig = plt.figure(figsize=(5, 5))
+fig = plt.figure(figsize=(8, 8))
 ax = plt.axes(projection='3d')
 
 
 
 
-for t in np.linspace(0, 1, 100):
-
-    thetas = (sin(5*t), 0, 0, 0)
+def plot_arm(thetas):
     T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas)
     print(T_end)
 
@@ -97,8 +96,6 @@ for t in np.linspace(0, 1, 100):
 
     points = np.array([p_shoulder, p_shoulder2, p_shoulder3, p_elbow, p_end]).T
 
-
-    # ax.set_aspect('equal', adjustable='box')
     ax.clear()
     ax.set_xlim(-0.25, 0.25)
     ax.set_ylim(-0.25, 0.25)
@@ -112,9 +109,37 @@ for t in np.linspace(0, 1, 100):
     ]
     plot_cube(ax, cube_definition)
 
-    # plt.draw()
-    plt.pause(0.02)
-    # ax.scatter3D(T_M[0][3], T_M[1][3], T_M[2][3])
+    w = 0.02
+    plot_link(ax, R_shoulder, p_shoulder, size=(w, -L_b/2, w))
+    plot_link(ax, R_shoulder2, p_shoulder2, size=(w, w, w))
+    plot_link(ax, R_shoulder3, p_shoulder3, size=(w, w, -L_arm))
+    elbow_pos_fixed = p_elbow + R_elbow@np.array([-0.05118, 0, 0])
+    plot_link(ax, R_elbow, elbow_pos_fixed, size=(w, w, -L_forearm))
 
+num_sliders = 4
+sliders = []
+for i in range(num_sliders):
+    height = 0.05
+    space = height * num_sliders
+    fig.subplots_adjust(bottom=space)
+    slider_ax = fig.add_axes([0.25, space - i*height, 0.65, 0.03])
+    slider = Slider(
+        ax=slider_ax,
+        label=f"theta {i}",
+        valmin=-pi,
+        valmax=pi,
+        valinit=0,
+    ) 
+    sliders.append(slider)
 
+def update(val=0):
+    thetas = []
+    for slider in sliders:
+        thetas.append(slider.val)
+    plot_arm(thetas)
+
+for slider in sliders:
+    slider.on_changed(update)
+
+update()
 plt.show()

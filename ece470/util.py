@@ -27,6 +27,11 @@ def cross(a:np.ndarray,b:np.ndarray)->np.ndarray:
     '''
     return np.cross(a,b)
 
+def norm(v):
+    return np.sqrt(np.dot(v, v))
+def normalize(v):
+    return v / norm(v)
+
 
 '''  ROBOTICS    '''
 
@@ -83,6 +88,50 @@ def get_axis_angle_from_rotation(R):
     axis = W
     angle = theta
     return axis, angle
+
+# def get_rotation_from_direction(dir):
+#     '''
+#     PROBABLY DOESNT WORK RN
+#     Get the 3x3 rotation matrix that transforms the base coordinates to the orientation
+#     of a direction vector. The magnitude of the vector doesn't matter.
+#     '''
+#     up = np.array([0, 0, 1])
+#     dir = normalize(dir)
+    
+#     xaxis = cross(up, dir)
+#     xaxis = normalize(xaxis)
+
+#     yaxis = cross(dir, xaxis);
+#     yaxis = normalize(yaxis)
+
+#     R = np.array([
+#         xaxis,
+#         yaxis,
+#         dir
+#     ])
+#     return R
+
+def rot_xyz(axis, theta):
+    if(axis == 'x'):
+        return np.array([
+            [1, 0, 0],
+            [0, cos(theta), -sin(theta)],
+            [0, sin(theta), cos(theta)],
+        ])
+    if(axis == 'y'):
+        return np.array([
+            [cos(theta), 0, sin(theta)],
+            [0, 1, 0],
+            [-sin(theta), 0, cos(theta)],
+        ])
+    if(axis == 'z'):
+        return np.array([
+            [cos(theta), -sin(theta), 0],
+            [sin(theta), cos(theta), 0],
+            [0, 0, 1]
+        ])
+
+
 
 
 def format_transformation(R, p):
