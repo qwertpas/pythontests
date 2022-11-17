@@ -111,7 +111,11 @@ def get_axis_angle_from_rotation(R):
 #     ])
 #     return R
 
-def rot_xyz(axis, theta):
+def rot_xyz(axis='z', theta=pi/2):
+    '''
+    Get the rotation matrix for a rotation of angle theta along the x, y, or z axes.
+    '''
+    assert axis in ['x', 'y', 'z']
     if(axis == 'x'):
         return np.array([
             [1, 0, 0],

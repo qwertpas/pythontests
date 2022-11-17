@@ -82,8 +82,6 @@ fig = plt.figure(figsize=(8, 8))
 ax = plt.axes(projection='3d')
 
 
-
-
 def plot_arm(thetas):
     T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas)
     print(T_end)
@@ -100,9 +98,14 @@ def plot_arm(thetas):
     ax.set_xlim(-0.25, 0.25)
     ax.set_ylim(-0.25, 0.25)
     ax.set_zlim(-0.25, 0.25)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    
     ax.scatter3D(0, 0, 0, c='orange')
     ax.set_title(thetas)
     ax.plot3D(points[0], points[1], points[2])
+
 
     cube_definition = [
         (-L_b/2, -L_b/2, -0.1), (0-L_b/2,L_b-L_b/2,0-0.1), (L_b-L_b/2,0-L_b/2,0-0.1), (0-L_b/2,0-L_b/2,0.2-0.1)
@@ -140,6 +143,7 @@ def update(val=0):
 
 for slider in sliders:
     slider.on_changed(update)
+
 
 update()
 plt.show()

@@ -84,9 +84,51 @@ def plot_link(ax, R, p, size):
     ax.add_collection3d(faces)
     ax.set_box_aspect([1,1,1])
 
+def plot_arrow(ax, start, dir, color='red', alpha=0.8, arrow_ratio=0.2):
+    ax.quiver(
+        start[0], start[1], start[2], # <-- starting point of vector
+        dir[0], dir[1], dir[2], # <-- directions of vector
+        color = color, alpha = alpha,
+        arrow_length_ratio=arrow_ratio
+    )
+
+def plot_frame(ax, R, p, lengths=0.05):
+    plot_arrow(ax, p, R@np.array([lengths, 0, 0]), color='red')
+    plot_arrow(ax, p, R@np.array([0, lengths, 0]), color='green')
+    plot_arrow(ax, p, R@np.array([0, 0, lengths]), color='blue')
+
+def plot_origin(ax, lengths=0.05):
+    plot_frame(ax, R=np.eye(3), p=np.zeros(3), lengths=lengths)
+
+def init_3d_plot(size=(8,8), cube_lim=0.25):
+    fig = plt.figure(figsize=size)
+    ax = plt.axes(projection='3d')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_xlim(-cube_lim, cube_lim)
+    ax.set_ylim(-cube_lim, cube_lim)
+    ax.set_zlim(-cube_lim, cube_lim)
+    plot_origin(ax)
+    ax.scatter3D(0, 0, 0, c='orange')
+    ax.set_box_aspect([1,1,1])
+    return fig, ax
+
+def clear_3dplots(ax):
+    ax.clear()
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plot_origin(ax)
+    ax.scatter3D(0, 0, 0, c='orange')
+    ax.set_box_aspect([1,1,1])
+
+
+
 
 # fig = plt.figure(figsize=(5, 5))
 # ax = plt.axes(projection='3d')
+# plot_arrow(ax, (0, 0, 0), (0.01, 0.01, 0.01))
 # plot_link(
 #     ax=ax,
 #     R=rot_xyz('x', radians(30)),
@@ -97,4 +139,4 @@ def plot_link(ax, R, p, size):
 # ax.set_xlabel('X-Axis')
 # ax.set_ylabel('Y-Axis')
 # ax.set_zlabel('Z-Axis')
-# plt.show()
+plt.show()
