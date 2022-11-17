@@ -114,14 +114,17 @@ def init_3d_plot(size=(8,8), cube_lim=0.25):
     ax.set_box_aspect([1,1,1])
     return fig, ax
 
-def clear_3dplots(ax):
-    ax.clear()
+def draw_labels(ax, cube_lim=0.25):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     plot_origin(ax)
     ax.scatter3D(0, 0, 0, c='orange')
     ax.set_box_aspect([1,1,1])
+    ax.set_xlim(-cube_lim, cube_lim)
+    ax.set_ylim(-cube_lim, cube_lim)
+    ax.set_zlim(-cube_lim, cube_lim)
+
 
 
 

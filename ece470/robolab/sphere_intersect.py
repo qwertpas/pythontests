@@ -46,16 +46,34 @@ def spherical_fwdk(thetas, order=['x','y','z']):
 def spherical_invk(R):
     '''
     Find the thetas 1-3 of a spherical wrist to create a desired orientation R
+    First convert the yxz frame to zyx frame
+    https://www.slideserve.com/marva/ch-3-inverse-kinematics-ch-4-velocity-kinematics
     '''
-    theta = np.arctan2(R[2,2], np.sqrt(1 - R[2,2]**2))
-    phi = np.arctan2(R[0,2], R[1,2])
-    psi = np.arctan2(-R[2,0], R[2,1])
+    shift = np.array([ #convert to whatever frame harvard uses
+        [1, 0, 0],
+        [0, 1, 0]
+    ])
+    R = shift@R
 
-    thetas = [theta, phi, psi]
+    s5 = np.sqrt(1 - R[2,2]**2)
+    
+    #first solution s5 > 0:
+    theta5 = np.arctan2(R[0,2], R[1,2])
+    phi1 = np.arctan2(R[2,2], s5)
+    psi = np.arctan2(-R[2,0], R[2,1])
+    sol1 = [theta4, theta5, theta6]
+
+    theta5 = np.arctan2(R[0,2], R[1,2])
+    phi1 = np.arctan2(R[2,2], np.sqrt(1 - R[2,2]**2))
+    psi = np.arctan2(-R[2,0], R[2,1])
+    sol1 = [theta4, theta5, theta6]
+
+
+    thetas = ([theta1, phi, psi], [theta2, phi, psi])
     return thetas
 
 
-fig, ax = init_3d_plot()    
+fig, ax = init_3d_plot(size=(8,7))    
 
 num_sliders = 3
 sliders = []
@@ -79,9 +97,19 @@ def update(val=0):
         thetas.append(slider.val)
 
     R = spherical_fwdk(thetas, ['y', 'x', 'z'])
+    
+    # R = spherical_fwdk(thetas, ['z', 'y', 'z'])
 
-    clear_3dplots(ax)
-    plot_frame(ax, R, (0.1, 0.1, 0.1))
+    p0 = np.array([0, 0, -0.1])
+    p1 = R@p0
+
+    print(f"R: {R}")
+    print(spherical_invk(R))
+
+    ax.clear()
+    plot_frame(ax, R, p1)
+    draw_labels(ax)
+
 
 for slider in sliders:
     slider.on_changed(update)
