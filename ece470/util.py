@@ -30,7 +30,12 @@ def cross(a:np.ndarray,b:np.ndarray)->np.ndarray:
 def norm(v):
     return np.sqrt(np.dot(v, v))
 def normalize(v):
-    return v / norm(v)
+    v = np.array(v)
+    n = norm(v)
+    if n > 1e-8:
+        return v / norm(v)
+    else:
+        return np.zeros_like(v)
 
 def signed_mod(num, mod):
     return (num + mod/2)%mod - mod/2
@@ -273,22 +278,68 @@ def get_screw_axis_angle_from_transformation(T):
 
 
 
-# import numpy as np
-# import scipy
-# from sympy import *
+def sphere_intersect(line_origin, line_dir, sphere_center, sphere_radius):
+    '''
+    https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+    '''
+    o = np.array(line_origin)
+    u = normalize(line_dir)
+    c = np.array(sphere_center)
+    r = sphere_radius
 
-# x, y = symbols('x y')
-# expr = x + 2*y
-# print(expr.simplify())
+    determinant = np.dot(u, o-c)**2 - (np.dot(o-c,o-c) - r**2)
+    if(determinant < 0):
+        print(f"No solution found: determinant={determinant}")
+        return 0
+    else:
+        dist_from_line_origin = -np.dot(u, o-c) + np.sqrt(determinant)
+        intersect_pt = o + u*dist_from_line_origin
+        return intersect_pt, dist_from_line_origin
 
-# ''' 
-# L = K - P 
-# τ_i = d/dt(δL/δθ̇_i) - δL/δθ_i
-# '''
+'''uses law of cosines to get an angle C of a triangle that has known sides a, b, c'''
+def get_angle_of_tri(a, b, c):
+    return np.arccos((a**2 + b**2 - c**2)/(2*a*b))
 
-# m2, L1, L2, theta1_dot, theta2_dot, theta2 = symbols('m2, L1, L2, theta1_dot, theta2_dot, theta2')
-# L = m2 * L1 * L2 * theta1_dot * theta2_dot * cos(theta2)
+def spherical_fwdk(thetas, order=['x','y','z']):
+    '''
+    Get the orientation after being transformed by a spherical wrist,
+    where thetas are the angles for rotation in the xyz axes in the specified order
+    from the base link to farther out in the chain.
+    '''
+    R = np.eye(3)
+    for i in range(3):
+        R = R @ rot_xyz(order[i], thetas[i])
+    return R
 
-# print(diff(diff(L, theta1_dot), t))
+def spherical_invk(R):
+    '''
+    Find the thetas 1-3 of a spherical wrist to create a desired orientation R
+    First convert the yxz frame to zyx frame
+    https://www.slideserve.com/marva/ch-3-inverse-kinematics-ch-4-velocity-kinematics
+    '''
+    shift = np.array([ #convert to whatever frame harvard uses
+        [0, 0, 1],
+        [1, 0, 0],
+        [0, 1, 0]
+    ])
+    R = shift@R
 
+    s5 = np.sqrt(1 - R[2,2]**2)
+    
+    #first solution s5 > 0:
+    theta4 = np.arctan2(R[0,2], R[1,2]) - pi/2
+    theta5 = np.arctan2(R[2,2], s5)
+    theta6 = np.arctan2(-R[2,0], R[2,1])
+    sol1 = [theta4, theta5, theta6]
+    sol1 = [-signed_mod(ang, 2*pi) for ang in sol1]
+
+    #first solution s5 < 0:
+    theta4 = np.arctan2(-R[0,2], -R[1,2]) - pi/2
+    theta5 = np.arctan2(R[2,2], -s5)
+    theta6 = np.arctan2(R[2,0], -R[2,1])
+    sol2 = [theta4, theta5, theta6]
+    sol2 = [-signed_mod(ang, 2*pi) for ang in sol2]
+
+
+    return sol1, sol2
 

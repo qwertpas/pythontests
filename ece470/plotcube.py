@@ -54,7 +54,7 @@ def plot_cube(ax, cube_definition):
 # plot_cube(ax, cube_definition)
 # plt.show()
 
-def plot_link(ax, R, p, size):
+def plot_link(ax, R, p, size, color=(0,0,1,0.5)):
     '''
     Plot a rectangular prism of rotation R and position p on the axis.
     size specifies how wide the prism is in the x, y, and z directions in the base frame.
@@ -79,7 +79,7 @@ def plot_link(ax, R, p, size):
         edges.append([verts[i],verts[(1+i)%4],verts[(1+i)%4+4],verts[i+4]])
 
     faces = Poly3DCollection(edges, zsort='min', linewidths=1, edgecolors='k')
-    # faces.set_facecolor((0,0,1,0.5))
+    faces.set_facecolor(color)
 
     ax.add_collection3d(faces)
     ax.set_box_aspect([1,1,1])
