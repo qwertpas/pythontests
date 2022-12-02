@@ -7,6 +7,8 @@ sys.path.insert(0, dir+'/../')   #allow imports from parent directory
 from util import *
 from plotcube import *
 
+#[-1.05 -1.05  0.42 -1.21]
+
 np.set_printoptions(precision=2, suppress=True, threshold=5)
 
 import matplotlib.pyplot as plt

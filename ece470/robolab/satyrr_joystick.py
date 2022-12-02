@@ -94,15 +94,19 @@ def forward_kinematics(angles):
 
     return HTM_BS1, HTM_BS2, HTM_BS3, HTM_BE, HTM_BeF
 
+p_joy_elb = np.zeros(3)
+
 def satyrr_joystick_invk(R_joy_end, p_joy_end):
     ang_joy_end = R_joy_end[:,1]
 
 
-    p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
+    p_joy_elb = p_joy_end - L_forearm * ang_joy_end
+    # p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
+    # p_joy_elb = p_joy_end 
 
     p_sat_elb, _ = sphere_intersect(
-        line_origin=p_joy_end,
-        line_dir=p_joy_end,
+        line_origin=p_joy_elb,
+        line_dir=p_joy_elb,
         sphere_center=(0,0,0),
         sphere_radius=L_sat_arm
     )
@@ -111,7 +115,8 @@ def satyrr_joystick_invk(R_joy_end, p_joy_end):
     return p_sat_elb
 
 
-fig, ax = init_3d_plot(size=(8,7))    
+fig, ax = init_3d_plot(size=(10,9), cube_lim=0.15)    
+
 
 def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     R_shoulder, p_shoulder = extract_R_p_from_transformation(T_shoulder)
@@ -121,6 +126,7 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     R_end, p_end = extract_R_p_from_transformation(T_end)
 
 
+    # p_sat_elb = satyrr_joystick_invk(R_end, p_end)
     p_sat_elb = satyrr_joystick_invk(R_end, p_end)
 
 
@@ -133,21 +139,45 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     plot_link(ax, R_shoulder3, p_shoulder3, size=(w, w, -L_arm))
     plot_link(ax, R_elbow, p_elbow, size=(w, w, -L_forearm))
     plot_link(ax, R_end, p_end, size=(w, w, w))
+
+    #joystick body
     plot_link(ax, np.eye(3), (0, 0, -0.25), size=(0.1, L_shoulder_from_body, 0.5), color=(0, 0, 1, 0.1))
 
-    #satyrr
-    sat_right_shoulder = np.array([0, L_sat_shoulder_from_body, 0])
-    plot_link(ax, R_end, p_sat_elb - sat_right_shoulder, size=(w, w, -L_sat_forearm), color='red')
+    #satyrr arm
+    sat_right_shoulder = np.array([0, -L_sat_shoulder_from_body, 0])
+    plot_frame(ax, R_end, p_sat_elb + sat_right_shoulder)
+
+    theta3axis = cross(p_sat_elb, R_end[:,2])
+
+    Rz = -normalize(p_sat_elb)
+    Ry = normalize(theta3axis) #z component of R_end is vector pointing from elbow to end
+    Rx = normalize(cross(Ry, Rz))
+    R_sphere = np.hstack((Rx.reshape((3,1)), Ry.reshape((3,1)), Rz.reshape((3,1))))
+    # print(R_sphere)
+    plot_frame(ax, R_sphere, p_sat_elb + sat_right_shoulder, lengths=0.1)
+
+    result_thetas = np.zeros(4)
+    result_thetas[0:3] = spherical_invk(R_sphere)[0]
+    result_thetas[3] = -arcsin(norm(theta3axis)/(norm(p_sat_elb)))
+
+    print(result_thetas)
+
+    plot_link(ax, R_sphere, sat_right_shoulder, size=(w, w, -L_sat_arm), color='red')
+    plot_link(ax, R_sphere @ rot_xyz('y', result_thetas[3]), p_sat_elb + sat_right_shoulder, size=(w, w, -L_sat_forearm), color='red')
+
+    plot_frame(ax, R_end, p_joy_elb)
+
+    #satyrr body
     plot_link(ax, np.eye(3), (0, 0, -0.25), size=(0.05, L_sat_shoulder_from_body, 0.3), color=(1, 0, 0, 0.1))
 
     # draw sphere
     r = L_sat_arm
     u, v = np.mgrid[0:2*np.pi:10j, 0:np.pi:10j]
     x = np.cos(u)*np.sin(v)*r
-    y = np.sin(u)*np.sin(v)*r - L_sat_shoulder_from_body
+    y = np.sin(u)*np.sin(v)*r + L_sat_shoulder_from_body
     z = np.cos(v)*r
     
-    ax.plot_wireframe(x, y, z, color="gray")
+    # ax.plot_wireframe(x, y, z, color="gray")
     ax.plot_wireframe(x, -y, z, color="gray")
 
     draw_labels(ax, cube_lim=0.5)
