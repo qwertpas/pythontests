@@ -28,6 +28,8 @@ L_hand = 0.078 #width of the hand that goes inwards
 L_sat_forearm = 0.2115
 L_sat_arm = 0.11945
 L_sat_shoulder_from_body = 0.18
+sat_right_shoulder = np.array([0, -L_sat_shoulder_from_body, 0])
+
 
 def rotMatrix(axis, theta):
     if(axis == 'x'):
@@ -145,7 +147,6 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     plot_link(ax, np.eye(3), (0, 0, -0.25), size=(0.1, L_shoulder_from_body, 0.5), color=(0, 0, 1, 0.1))
 
     #satyrr arm
-    sat_right_shoulder = np.array([0, -L_sat_shoulder_from_body, 0])
     # plot_frame(ax, R_end, p_sat_elb + sat_right_shoulder)
 
     Rz = -normalize(p_sat_elb)
