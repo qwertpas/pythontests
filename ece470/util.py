@@ -22,20 +22,31 @@ def cot(theta):
     return 1/tan(theta)
 
 def cross(a:np.ndarray,b:np.ndarray)->np.ndarray:
-    '''
-    workaround for bug with np.cross() that makes code unreachable
-    '''
+    ''' workaround for bug with np.cross() that makes code unreachable'''
     return np.cross(a,b)
 
 def norm(v):
+    '''get the norm/magnitude of a vector'''
     return np.sqrt(np.dot(v, v))
+
 def normalize(v):
+    '''get the unit vector pointing in the same direction as the vector'''
     v = np.array(v)
     n = norm(v)
     if n > 1e-8:
         return v / norm(v)
     else:
         return np.zeros_like(v)
+
+def ang_betw(v1, v2, axis):
+    '''get angle between two 3 vectors. The axis is required for knowing the order'''
+    ang = arccos(np.dot(v1, v2)/(norm(v1)*norm(v2)))
+    if np.dot(cross(v1,v2), axis) < 0:
+        ang *= -1
+    return ang
+
+# a = ang_betw((0,1,1), (0,0,-1))
+# print(a)
 
 def signed_mod(num, mod):
     return (num + mod/2)%mod - mod/2

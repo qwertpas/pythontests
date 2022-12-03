@@ -93,7 +93,7 @@ def plot_satyrr(ax, thetas):
     
     ax.scatter3D(0, 0, 0, c='orange')
     ax.set_title(thetas)
-    ax.plot3D(points[0], points[1], points[2])
+    # ax.plot3D(points[0], points[1], points[2])
 
     cube_definition = [
         (-L_b/2, -L_b/2, -0.1), (0-L_b/2,L_b-L_b/2,0-0.1), (L_b-L_b/2,0-L_b/2,0-0.1), (0-L_b/2,0-L_b/2,0.2-0.1)
@@ -108,7 +108,9 @@ def plot_satyrr(ax, thetas):
     elbow_pos_fixed = p_elbow + R_elbow@np.array([-0.05118, 0, 0])
     plot_link(ax, R_elbow, elbow_pos_fixed, size=(w, w, -L_forearm), color=transparent_red)
 
-    plot_link(ax, np.eye(3), (0, 0, -L_b), size=(L_b/2, L_b/2, 2*L_b), color=transparent_red)
+    plot_link(ax, np.eye(3), (0, 0, -L_b), size=(L_b/2, L_b/2, 2*L_b), color=transparent_red) #body
+
+    plot_frame(ax, R_end, p_end)
 
 
 if __name__ == "__main__":
