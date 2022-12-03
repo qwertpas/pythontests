@@ -80,13 +80,8 @@ def forward_kinematics(angles):
     return HTM_BS1, HTM_BS2, HTM_BS3, HTM_BE, HTM_BeF
 
 
-fig = plt.figure(figsize=(8, 8))
-ax = plt.axes(projection='3d')
-
-
-def plot_arm(thetas):
+def plot_satyrr(ax, thetas):
     T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas)
-    print(T_end)
 
     R_shoulder, p_shoulder = extract_R_p_from_transformation(T_shoulder)
     R_shoulder2, p_shoulder2 = extract_R_p_from_transformation(T_shoulder2)
@@ -95,57 +90,64 @@ def plot_arm(thetas):
     R_end, p_end = extract_R_p_from_transformation(T_end)
 
     points = np.array([p_shoulder, p_shoulder2, p_shoulder3, p_elbow, p_end]).T
-
-    ax.clear()
-    ax.set_xlim(-0.25, 0.25)
-    ax.set_ylim(-0.25, 0.25)
-    ax.set_zlim(-0.25, 0.25)
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
     
     ax.scatter3D(0, 0, 0, c='orange')
     ax.set_title(thetas)
     ax.plot3D(points[0], points[1], points[2])
 
-
     cube_definition = [
         (-L_b/2, -L_b/2, -0.1), (0-L_b/2,L_b-L_b/2,0-0.1), (L_b-L_b/2,0-L_b/2,0-0.1), (0-L_b/2,0-L_b/2,0.2-0.1)
     ]
-    plot_cube(ax, cube_definition)
+    # plot_cube(ax, cube_definition)
 
     w = 0.02
-    plot_link(ax, R_shoulder, p_shoulder, size=(w, -L_b/2, w))
-    plot_link(ax, R_shoulder2, p_shoulder2, size=(w, w, w))
-    plot_link(ax, R_shoulder3, p_shoulder3, size=(w, w, -L_arm))
+    transparent_red = (1, 0, 0, 0.2)
+    plot_link(ax, R_shoulder, p_shoulder, size=(w, -L_b/2, w), color=transparent_red)
+    plot_link(ax, R_shoulder2, p_shoulder2, size=(w, w, w), color=transparent_red)
+    plot_link(ax, R_shoulder3, p_shoulder3, size=(w, w, -L_arm), color=transparent_red)
     elbow_pos_fixed = p_elbow + R_elbow@np.array([-0.05118, 0, 0])
-    plot_link(ax, R_elbow, elbow_pos_fixed, size=(w, w, -L_forearm))
+    plot_link(ax, R_elbow, elbow_pos_fixed, size=(w, w, -L_forearm), color=transparent_red)
 
-num_sliders = 4
-sliders = []
-for i in range(num_sliders):
-    height = 0.05
-    space = height * num_sliders
-    fig.subplots_adjust(bottom=space)
-    slider_ax = fig.add_axes([0.25, space - i*height, 0.65, 0.03])
-    slider = Slider(
-        ax=slider_ax,
-        label=f"theta {i}",
-        valmin=-pi,
-        valmax=pi,
-        valinit=0,
-    ) 
-    sliders.append(slider)
+    plot_link(ax, np.eye(3), (0, 0, -L_b), size=(L_b/2, L_b/2, 2*L_b), color=transparent_red)
 
-def update(val=0):
-    thetas = []
+
+if __name__ == "__main__":
+    fig = plt.figure(figsize=(8, 8))
+    ax = plt.axes(projection='3d')
+
+
+    num_sliders = 4
+    sliders = []
+    for i in range(num_sliders):
+        height = 0.05
+        space = height * num_sliders
+        fig.subplots_adjust(bottom=space)
+        slider_ax = fig.add_axes([0.25, space - i*height, 0.65, 0.03])
+        slider = Slider(
+            ax=slider_ax,
+            label=f"theta {i}",
+            valmin=-pi,
+            valmax=pi,
+            valinit=0,
+        ) 
+        sliders.append(slider)
+
+    def update(val=0):
+        thetas = []
+        for slider in sliders:
+            thetas.append(slider.val)
+        ax.clear()
+        ax.set_xlim(-0.25, 0.25)
+        ax.set_ylim(-0.25, 0.25)
+        ax.set_zlim(-0.25, 0.25)
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        plot_satyrr(ax, thetas)
+
     for slider in sliders:
-        thetas.append(slider.val)
-    plot_arm(thetas)
-
-for slider in sliders:
-    slider.on_changed(update)
+        slider.on_changed(update)
 
 
-update()
-plt.show()
+    update()
+    plt.show()

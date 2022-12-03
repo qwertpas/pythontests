@@ -8,6 +8,7 @@ sys.path.insert(0, dir+'/../')   #allow imports from parent directory
 
 from util import *
 from plotcube import *
+from satyrr import plot_satyrr
 
 
 
@@ -26,7 +27,7 @@ L_hand = 0.078 #width of the hand that goes inwards
 
 L_sat_forearm = 0.2115
 L_sat_arm = 0.11945
-L_sat_shoulder_from_body = 0.15/2
+L_sat_shoulder_from_body = 0.15
 
 def rotMatrix(axis, theta):
     if(axis == 'x'):
@@ -97,9 +98,9 @@ def forward_kinematics(angles):
 p_joy_elb = np.zeros(3)
 
 def satyrr_joystick_invk(R_joy_end, p_joy_end):
-    ang_joy_end = R_joy_end[:,1]
+    ang_joy_end = -R_joy_end[:,2]
 
-
+    global p_joy_elb
     p_joy_elb = p_joy_end - L_forearm * ang_joy_end
     # p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
     # p_joy_elb = p_joy_end 
@@ -145,15 +146,14 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
 
     #satyrr arm
     sat_right_shoulder = np.array([0, -L_sat_shoulder_from_body, 0])
-    plot_frame(ax, R_end, p_sat_elb + sat_right_shoulder)
+    # plot_frame(ax, R_end, p_sat_elb + sat_right_shoulder)
 
-    theta3axis = cross(p_sat_elb, R_end[:,2])
+    theta3axis = cross(p_sat_elb, R_end[:,2]) #z component of R_end is vector pointing from joystick end to elbow
 
     Rz = -normalize(p_sat_elb)
-    Ry = normalize(theta3axis) #z component of R_end is vector pointing from elbow to end
+    Ry = normalize(theta3axis) 
     Rx = normalize(cross(Ry, Rz))
     R_sphere = np.hstack((Rx.reshape((3,1)), Ry.reshape((3,1)), Rz.reshape((3,1))))
-    # print(R_sphere)
     plot_frame(ax, R_sphere, p_sat_elb + sat_right_shoulder, lengths=0.1)
 
     result_thetas = np.zeros(4)
@@ -162,8 +162,8 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
 
     print(result_thetas)
 
-    plot_link(ax, R_sphere, sat_right_shoulder, size=(w, w, -L_sat_arm), color='red')
-    plot_link(ax, R_sphere @ rot_xyz('y', result_thetas[3]), p_sat_elb + sat_right_shoulder, size=(w, w, -L_sat_forearm), color='red')
+    plot_link(ax, R_sphere, sat_right_shoulder, size=(w, w, -L_sat_arm), color=(1, 0, 0, 0.1))
+    plot_link(ax, R_sphere @ rot_xyz('y', result_thetas[3]), p_sat_elb + sat_right_shoulder, size=(w, w, -L_sat_forearm), color=(1, 0, 0, 0.1))
 
     plot_frame(ax, R_end, p_joy_elb)
 
@@ -176,9 +176,11 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     x = np.cos(u)*np.sin(v)*r
     y = np.sin(u)*np.sin(v)*r + L_sat_shoulder_from_body
     z = np.cos(v)*r
+
+    plot_satyrr(ax, result_thetas)
     
     # ax.plot_wireframe(x, y, z, color="gray")
-    ax.plot_wireframe(x, -y, z, color="gray")
+    # ax.plot_wireframe(x, -y, z, color="gray")
 
     draw_labels(ax, cube_lim=0.5)
 
