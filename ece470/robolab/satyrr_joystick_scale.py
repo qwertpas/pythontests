@@ -12,7 +12,7 @@ from satyrr import plot_satyrr
 
 
 
-np.set_printoptions(precision=4, suppress=True, threshold=5)
+np.set_printoptions(precision=3, suppress=True, threshold=5)
 
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
@@ -23,6 +23,7 @@ L_shoulder_z = 0.168 #downwards
 L_arm = 0.313 #upper arm length
 L_forearm = 0.339 # lower arm length
 L_hand = 0.078 #width of the hand that goes inwards
+joy_right_shoulder = np.array([0, -L_shoulder_from_body-L_shoulder_y, 0])
 
 
 L_sat_forearm = 0.2115
@@ -99,29 +100,6 @@ def forward_kinematics(angles):
 
 p_joy_elb = np.zeros(3)
 
-def satyrr_joystick_invk(R_joy_end, p_joy_end):
-    ang_joy_end = -R_joy_end[:,2]
-
-    global p_joy_elb
-    p_joy_elb = p_joy_end - L_forearm * ang_joy_end
-    # p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
-    # p_joy_elb = p_joy_end 
-
-    print(f"p_joy_elb: {p_joy_elb}")
-    # print(f"p_joy_elb + sat_right_shoulder: {p_joy_elb - np.array([0, -0.24, 0])}")
-    # print(f"sat_right_shoulder: {sat_right_shoulder}")
-
-    p_sat_elb, _ = sphere_intersect(
-        line_origin=p_joy_elb,
-        line_dir=p_joy_elb ,
-        sphere_center= (0,0,0),
-        sphere_radius=L_sat_arm
-    )
-
-    p_sat_end = p_sat_elb + ang_joy_end*L_sat_forearm
-    return p_sat_elb
-
-
 fig, ax = init_3d_plot(size=(10,9), cube_lim=0.05)    
 
 
@@ -132,13 +110,19 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     R_elbow, p_elbow = extract_R_p_from_transformation(T_elbow)
     R_end, p_end = extract_R_p_from_transformation(T_end)
 
+    print("end effector ", T_end)
+
 
     # p_sat_elb = satyrr_joystick_invk(R_end, p_end)
-    p_sat_elb = satyrr_joystick_invk(R_end, p_end)
+    ang_joy_end = -R_end[:,2]
 
-    print(f"p_sat_elb: {p_sat_elb}")
+    p_joy_elb = p_end - L_forearm * ang_joy_end - np.array([0,L_hand-L_shoulder_from_body-L_shoulder_y,0])
+    # p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
+    # p_joy_elb = p_joy_end 
+    p_sat_elb = L_sat_arm * normalize(p_joy_elb)
+    print('p_sat_elb', p_sat_elb)
 
-    plot_frame(ax, np.eye(3), p_sat_elb, lengths=0.5)
+    plot_frame(ax, np.eye(3), p_joy_elb, lengths=0.5)
 
 
     ax.clear()
@@ -171,13 +155,18 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     # if(result_thetas[3] > -0.41):
     #     result_thetas[3] -= 0.41*2
 
+    print("R_sphere ", R_sphere)
+    print("result_thetas ", result_thetas)
+
     # print(degrees(result_thetas))
-    print(f"R_sphere: {R_sphere}")
 
     plot_frame(ax, R_end, p_joy_elb)
     plot_frame(ax, np.eye(3), sat_right_shoulder)
 
     plot_satyrr(ax, result_thetas)
+
+    for i in range(len(result_thetas)):
+        plot_link(ax, np.eye(3), p=(0, 0.3+0.05*i, 0), size=(w,w,0.4/pi*result_thetas[i]))
 
 
     # draw sphere
@@ -212,9 +201,8 @@ def update(val=0):
     thetas = []
     for slider in sliders:
         thetas.append(slider.val)
-    thetas = [-0.1, -0.1, -0.1, 0.3]
+    # thetas = [-0.1, -0.1, -0.1, 0.3]
     T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas)
-    print(T_end)
     plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end)
 
 for slider in sliders:
