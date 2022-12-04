@@ -19,7 +19,9 @@ double L_sat_shoulder_from_body = 0.18;
 double L_sat_forearm = 0.2115;
 double L_sat_arm = 0.11945;
 
-Matrix4d joystick_fwdk(Vector4d thetas_joy){
+Matrix4d joystick_fwdk(Vector4d thetas_joy, bool is_right){
+
+    int pol = is_right ? 1 : -1; //flip y offsets if on left side
 
     float th1 = thetas_joy[0];
     float th2 = thetas_joy[1];
@@ -28,7 +30,7 @@ Matrix4d joystick_fwdk(Vector4d thetas_joy){
 
     Matrix4d HTM_BS1; HTM_BS1 <<
         cos(th1), -sin(th1), 0, 0,
-        sin(th1), cos(th1), 0, -L_joy_shoulder_from_body,
+        sin(th1), cos(th1), 0, -L_joy_shoulder_from_body * pol,
         0, 0, 1, 0,
         0, 0, 0, 1;
 
@@ -40,7 +42,7 @@ Matrix4d joystick_fwdk(Vector4d thetas_joy){
 
     Matrix4d HTM_S2S3; HTM_S2S3 <<
         cos(th3), 0, sin(th3), 0,
-        0, 1, 0, -L_joy_shoulder_y,
+        0, 1, 0, -L_joy_shoulder_y * pol,
         -sin(th3), 0, cos(th3), -L_joy_shoulder_z,
         0, 0, 0, 1;
 
@@ -52,7 +54,7 @@ Matrix4d joystick_fwdk(Vector4d thetas_joy){
 
     Matrix4d HTM_EeF; HTM_EeF <<
         1, 0, 0, 0,
-        0, 1, 0, L_joy_hand,
+        0, 1, 0, L_joy_hand * pol,
         0, 0, 1, -L_joy_forearm,
         0, 0, 0, 1;
 
@@ -91,25 +93,37 @@ Vector3d spherical_invk(Matrix3d R){
 }
 
 
-Vector4d satyrr_invk(Matrix4d joy_end){
+Vector4d satyrr_invk(Matrix4d joy_end, bool is_right){
+
+    //flip y offsets if on left side
+    int pol = is_right ? 1 : -1; 
+
+    //extract position and coordinate frame components of joystick end effector
     Vector3d p_joy_end(joy_end(0,3), joy_end(1,3), joy_end(2,3));
     Vector3d yaxis_joy_end(joy_end(0,1), joy_end(1,1), joy_end(2,1));
     Vector3d zaxis_joy_end(joy_end(0,2), joy_end(1,2), joy_end(2,2));
 
+    //find the joystick elbow position by subtracting the forearm
     Vector3d p_joy_elb = p_joy_end - L_joy_forearm * -zaxis_joy_end;
-    Vector3d p_shoulder_zero(0, -L_joy_shoulder_from_body - L_joy_shoulder_y + L_joy_hand, 0);
-    Vector3d p_sat_elb = L_sat_arm * (p_joy_elb - p_shoulder_zero).normalized();
 
+    //find the vector from joystick's shoulder to 
+    Vector3d p_shoulder_zero(0, -L_joy_shoulder_from_body - L_joy_shoulder_y + L_joy_hand, 0);
+    Vector3d p_sat_elb = L_sat_arm * (p_joy_elb - p_shoulder_zero * pol).normalized();
+
+    //build the frame at satyrr's elbow so the y axis is the elbow rotation
     Vector3d Rz = -p_sat_elb.normalized();
     Vector3d Ry = (yaxis_joy_end - Rz*yaxis_joy_end.dot(Rz)).normalized();
     Vector3d Rx = Ry.cross(Rz).normalized();
     Matrix3d R_sphere;
     R_sphere << Rx, Ry, Rz;
 
+    //find the values of the 3 joints to achieve the elbow frame
     Vector3d sphere_joints = spherical_invk(R_sphere);
 
+    //find angle between satyrr's upper arm and joystick's forearm
     double theta4 = -ang_betw(zaxis_joy_end, Rz, Ry);
 
+    //combine thetas1-3 and theta4 into 1 vector
     Vector4d thetas_sat;
     thetas_sat << sphere_joints, theta4;
 
@@ -126,9 +140,19 @@ Vector4d satyrr_invk(Matrix4d joy_end){
 
 
 int main(){
-    Vector4d thetas_joy(0.826, -0.594, -0.846, -1.358);
 
-    Vector4d thetas_sat = satyrr_invk(joystick_fwdk(thetas_joy));
+    //right arm
+    Vector4d thetas_joy_R(0.826, -0.594, -0.846, -1.358);
+    Matrix4d joy_end_R = joystick_fwdk(thetas_joy_R, true);
+    Vector4d thetas_sat_R = satyrr_invk(joy_end_R, true);
+    std::cout << "joy_end_R:\n" << joy_end_R << std::endl;
+    std::cout << "thetas_sat_R:\n" << thetas_sat_R << std::endl;
 
-    std::cout << "thetas_sat:\n" << thetas_sat << std::endl;
+
+    //left arm
+    Vector4d thetas_joy_L(-0.826, 0.594, 0.846, -1.358);
+    Matrix4d joy_end_L = joystick_fwdk(thetas_joy_L, false);
+    Vector4d thetas_sat_L = satyrr_invk(joy_end_L, false);
+    std::cout << "joy_end_L:\n" << joy_end_L << std::endl;
+    std::cout << "thetas_sat_L:\n" << thetas_sat_L << std::endl;
 }

@@ -52,8 +52,12 @@ def rotMatrix(axis, theta):
             [0, 0, 1]
         ])
 
-def forward_kinematics(angles):
+def forward_kinematics(angles, is_right):
     th1, th2, th3, th4 = angles
+    if is_right:
+        pol = 1
+    else:
+        pol = -1
  
     # % Robot base (B) -> Shoulder M1 (S1) on the back
     # % rotates around z axis of robot body i.e. rotation axis = [0; 1; 0] 
@@ -166,7 +170,7 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     plot_satyrr(ax, result_thetas)
 
     for i in range(len(result_thetas)):
-        plot_link(ax, np.eye(3), p=(0, 0.3+0.05*i, 0), size=(w,w,0.4/pi*result_thetas[i]))
+        plot_link(ax, np.eye(3), p=(0.3+0.05*i, 0, 0), size=(w,w,0.4/pi*result_thetas[i]))
 
 
     # draw sphere
@@ -201,8 +205,8 @@ def update(val=0):
     thetas = []
     for slider in sliders:
         thetas.append(slider.val)
-    # thetas = [-0.1, -0.1, -0.1, 0.3]
-    T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas)
+    thetas = [0.826, -0.594, -0.846, -1.358]
+    T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas, is_right=True)
     plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end)
 
 for slider in sliders:
