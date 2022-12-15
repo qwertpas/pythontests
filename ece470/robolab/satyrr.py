@@ -102,7 +102,7 @@ def plot_satyrr(ax, thetas):
 
     w = 0.02
     transparent_red = (1, 0, 0, 0.2)
-    plot_link(ax, R_shoulder, p_shoulder, size=(w, -L_b/2, w), color=transparent_red)
+    plot_link(ax, R_shoulder, p_shoulder, size=(w, -L_b/2, w), color=transparent_red, long_ax='y')
     plot_link(ax, R_shoulder2, p_shoulder2, size=(w, w, w), color=transparent_red)
     plot_link(ax, R_shoulder3, p_shoulder3, size=(w, w, -L_arm), color=transparent_red)
     elbow_pos_fixed = p_elbow + R_elbow@np.array([-0.05118, 0, 0])

@@ -166,7 +166,7 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
 
     # print(degrees(result_thetas))
 
-    plot_frame(ax, R_end, p_joy_elb)
+    # plot_frame(ax, R_end, p_joy_elb)
     plot_frame(ax, np.eye(3), sat_right_shoulder)
 
     plot_satyrr(ax, result_thetas)
@@ -182,10 +182,10 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     y = np.sin(u)*np.sin(v)*r + L_sat_shoulder_from_body
     z = np.cos(v)*r
     # ax.plot_wireframe(x, y, z, color="gray")
-    ax.plot_wireframe(x, -y, z, color=(0, 1, 0, 0.3))
+    # ax.plot_wireframe(x, -y, z, color=(0, 1, 0, 0.3))
 
     draw_labels(ax, cube_lim=0.5)
-    ax.set_title(result_thetas)
+    ax.set_title(f"Satyrr θ: {result_thetas}")
 
 num_sliders = 4
 sliders = []
@@ -196,7 +196,7 @@ for i in range(num_sliders):
     slider_ax = fig.add_axes([0.25, space - i*height, 0.65, 0.03])
     slider = Slider(
         ax=slider_ax,
-        label=f"theta {i}",
+        label=f"Joystick θ{i}",
         valmin=-pi,
         valmax=pi,
         valinit=0,
