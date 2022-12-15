@@ -54,13 +54,21 @@ def plot_cube(ax, cube_definition):
 # plot_cube(ax, cube_definition)
 # plt.show()
 
-def plot_link(ax, R, p, size, color=(0,0,1,0.5)):
+def plot_link(ax, R, p, size, color=(0,0,1,0.5), long_ax='z'):
     '''
     Plot a rectangular prism of rotation R and position p on the axis.
     size specifies how wide the prism is in the x, y, and z directions in the base frame.
     '''
-    verts = []
+
+    #shift so that the long axis is the one that is in the z spot
+    if long_ax == 'y':
+        size = np.roll(size, 1)
+    if long_ax == 'x':
+        size = np.roll(size, 2)
+
     (wx, wy, wz) = size
+
+    verts = []
     for dx in (-wx, wx):
         for dy in (-wy, wy):
             verts.append(np.array([dx, dy*np.sign(dx), 0])) #ugh the vertices need to be in the right order
@@ -69,6 +77,13 @@ def plot_link(ax, R, p, size, color=(0,0,1,0.5)):
     verts = np.array(verts)
 
     for i in range(len(verts)):
+
+        # shift x, y, and z back to normal
+        if long_ax == 'y':
+            verts[i] = np.roll(verts[i], -1)
+        if long_ax == 'x':
+            verts[i] = np.roll(verts[i], -2)
+
         verts[i] = R@verts[i] + p
 
 
@@ -102,6 +117,7 @@ def plot_origin(ax, lengths=0.05):
 
 def init_3d_plot(size=(8,8), cube_lim=0.25):
     fig = plt.figure(figsize=size)
+    fig.tight_layout()
     ax = plt.axes(projection='3d')
     ax.set_xlabel('X')
     ax.set_ylabel('Y')

@@ -1,0 +1,97 @@
+
+ start kill
+actual pos [ 0.0525 -0.3728]
+detect pos [ 0.0614 -0.3448]
+camera err 0.0294
+kill time 10.939000000000021
+
+ start kill
+actual pos [ 0.084  -0.5292]
+detect pos [ 0.0923 -0.5312]
+camera err 0.0086
+kill time 11.894999999999982
+
+ start kill
+actual pos [-0.0645 -0.5378]
+detect pos [-0.0828 -0.5394]
+camera err 0.0184
+kill time 12.425000000000011
+
+ start kill
+actual pos [ 0.039  -0.5519]
+detect pos [ 0.0395 -0.5491]
+camera err 0.0028
+kill time 12.515999999999963
+
+ start kill
+actual pos [ 0.1098 -0.7454]
+detect pos [ 0.1287 -0.7812]
+camera err 0.0405
+kill time 10.92599999999993
+
+ start kill
+actual pos [-0.0538 -0.593 ]
+detect pos [-0.0607 -0.5973]
+camera err 0.0082
+kill time 12.517999999999915
+
+ start kill
+actual pos [-0.1482 -0.6385]
+detect pos [-0.1743 -0.6494]
+camera err 0.0283
+kill time 11.17999999999995
+
+ start kill
+actual pos [-0.1348 -0.4417]
+detect pos [-0.1597 -0.4219]
+camera err 0.0318
+kill time 11.807000000000016
+
+ start kill
+actual pos [-0.0295 -0.6569]
+detect pos [-0.05   -0.6865]
+camera err 0.036
+kill time 12.16700000000003
+
+ start kill
+actual pos [-0.1041 -0.5982]
+detect pos [-0.1227 -0.6141]
+camera err 0.0245
+kill time 12.084999999999923
+
+ start kill
+actual pos [-0.0086 -0.8306]
+detect pos [-0.0092 -0.8713]
+camera err 0.0407
+kill time 9.994000000000028
+
+ start kill
+actual pos [-0.1625 -0.3332]
+detect pos [-0.1971 -0.2986]
+camera err 0.049
+kill time 12.527999999999906
+
+ start kill
+actual pos [-0.3061 -0.6688]
+detect pos [-0.3616 -0.6943]
+camera err 0.0611
+kill time 13.487999999999943
+
+ start kill
+actual pos [ 0.1232 -0.6784]
+detect pos [ 0.1369 -0.7116]
+camera err 0.0359
+kill time 12.267999999999915
+
+ start kill
+actual pos [-0.0349 -0.7072]
+detect pos [-0.0411 -0.7413]
+camera err 0.0347
+kill time 10.061000000000035
+
+ start kill
+actual pos [ 0.2796 -0.6985]
+detect pos [ 0.3287 -0.7189]
+camera err 0.0532
+kill time 12.576000000000022
+done

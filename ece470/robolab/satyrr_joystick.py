@@ -212,7 +212,7 @@ def update(val=0):
     thetas = []
     for slider in sliders:
         thetas.append(slider.val)
-    thetas = [-0.1, -0.1, -0.1, 0.3]
+    # thetas = [-0.1, -0.1, -0.1, 0.3]
     T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas)
     print(T_end)
     plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end)

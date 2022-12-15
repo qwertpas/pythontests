@@ -18,8 +18,9 @@ from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 
 L_shoulder_from_body = 0.2105 #middle to shoulder pivot (to the right)
-L_shoulder_y = 0.1035 #to the right
-L_shoulder_z = 0.168 #downwards
+L_shoulder_x = 0.1035 #forward
+L_shoulder_y = 0.168 #to the right
+# L_shoulder_z = 0.168 #downwards
 L_arm = 0.313 #upper arm length
 L_forearm = 0.339 # lower arm length
 L_hand = 0.078 #width of the hand that goes inwards
@@ -78,7 +79,8 @@ def forward_kinematics(angles, is_right):
     # % Shoulder M2 (S2) -> Shoulder M3 (S3), Outer shoulder
     # % Rotates around the y axis of the robot body i.e. [0; 0; 1];
     Ro_S2S3 = rotMatrix('y', th3)
-    Tr_S2S3 = array([0, -L_shoulder_y, -L_shoulder_z])
+    # Tr_S2S3 = array([0, -L_shoulder_y, -L_shoulder_z])
+    Tr_S2S3 = array([L_shoulder_x, -L_shoulder_y, 0])
     HTM_S2S3 = format_transformation(Ro_S2S3, Tr_S2S3)
 
 
@@ -86,7 +88,7 @@ def forward_kinematics(angles, is_right):
 
     # % Shoulder M3 (S3) -> Elbow (E), Elbow
     # % rotates around y axis of robot body i.e. rotation axis = [0; 1; 0] 
-    Ro_S3E = rotMatrix('y', th4)
+    Ro_S3E = rotMatrix('y', -th4)
     Tr_S3E = array([0, 0, -L_arm])
     HTM_S3E = format_transformation(Ro_S3E, Tr_S3E)
 
@@ -120,7 +122,7 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     # p_sat_elb = satyrr_joystick_invk(R_end, p_end)
     ang_joy_end = -R_end[:,2]
 
-    p_joy_elb = p_end - L_forearm * ang_joy_end - np.array([0,L_hand-L_shoulder_from_body-L_shoulder_y,0])
+    p_joy_elb = p_end - L_forearm * ang_joy_end - np.array([L_shoulder_x,L_hand-L_shoulder_from_body-L_shoulder_y,0])
     # p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
     # p_joy_elb = p_joy_end 
     p_sat_elb = L_sat_arm * normalize(p_joy_elb)
@@ -133,8 +135,8 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     w = 0.02
 
     #joystick
-    plot_link(ax, R_shoulder, p_shoulder, size=(w, w, w))
-    plot_link(ax, R_shoulder2, p_shoulder2, size=(w, w, w))
+    plot_link(ax, R_shoulder2, p_shoulder, size=(w, -L_shoulder_y, w), long_ax='y')
+    plot_link(ax, R_shoulder2, p_shoulder3, size=(-L_shoulder_x, w, w), long_ax='x')
     plot_link(ax, R_shoulder3, p_shoulder3, size=(w, w, -L_arm))
     plot_link(ax, R_elbow, p_elbow, size=(w, w, -L_forearm))
     plot_link(ax, R_end, p_end, size=(w, w, w))
@@ -169,8 +171,8 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
 
     plot_satyrr(ax, result_thetas)
 
-    for i in range(len(result_thetas)):
-        plot_link(ax, np.eye(3), p=(0.3+0.05*i, 0, 0), size=(w,w,0.4/pi*result_thetas[i]))
+    # for i in range(len(result_thetas)):
+    #     plot_link(ax, np.eye(3), p=(0.3+0.05*i, 0, 0), size=(w,w,0.4/pi*result_thetas[i]))
 
 
     # draw sphere
@@ -205,7 +207,7 @@ def update(val=0):
     thetas = []
     for slider in sliders:
         thetas.append(slider.val)
-    thetas = [0.826, -0.594, -0.846, -1.358]
+    # thetas = [0.826, -0.594, -0.846, -1.358]
     T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas, is_right=True)
     plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end)
 
