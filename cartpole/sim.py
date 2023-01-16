@@ -4,6 +4,7 @@ from numpy import sin, cos, radians
 from scipy.integrate import RK45
 
 K = np.array([-1, -0.1, 30, 1])
+# K = np.array([0, 0, 0, 0])
 
 def cartpole(t, state):
     l = 0.5
