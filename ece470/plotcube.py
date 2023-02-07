@@ -112,8 +112,16 @@ def plot_frame(ax, R, p, lengths=0.05):
     plot_arrow(ax, p, R@np.array([0, lengths, 0]), color='green')
     plot_arrow(ax, p, R@np.array([0, 0, lengths]), color='blue')
 
+def plot_HTM(ax, HTM, lengths=0.05):
+    R, p = extract_R_p_from_transformation(HTM)
+    plot_frame(ax, R, p, lengths)
+
 def plot_origin(ax, lengths=0.05):
     plot_frame(ax, R=np.eye(3), p=np.zeros(3), lengths=lengths)
+
+def plot_point(ax, pt):
+    pt = np.array(pt).flatten()
+    ax.scatter3D(pt[0], pt[1], pt[2])
 
 def init_3d_plot(size=(8,8), cube_lim=0.25):
     fig = plt.figure(figsize=size)
