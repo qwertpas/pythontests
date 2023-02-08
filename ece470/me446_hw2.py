@@ -94,7 +94,7 @@ def plot_HTMs(ax, HTMs, links=True, lengths=0.05, label_end=True):
             print(p_end)
             plot_arrow(ax, start=p_start, dir=p_end-p_start, arrow_ratio=0, color='grey')
             if(label_end and i == len(HTMs)-1): #label the global position of end effector
-                ax.text(p_end[0]+lengths/4, p_end[1]+lengths/4, p_end[2]+lengths, f"({round(p_end[0],2)},{round(p_end[1],2)},{round(p_end[2],2)})")
+                ax.text(p_end[0]+lengths/4, p_end[1]+lengths/4, p_end[2]+lengths, f"({round(p_end[0],3)},{round(p_end[1],3)},{round(p_end[2],3)})")
 
 def plot_origin(ax, lengths=0.05):
     plot_frame(ax, R=np.eye(3), p=np.zeros(3), lengths=lengths)
@@ -147,10 +147,10 @@ def CRS_invk(p_des, q_init):
         ]
     return fsolve(error, q_init)
 
-#elbow down
-solution_thetas = CRS_invk(p_des=[0.3, -0.3, 0.254], q_init=[0, 0, 1])
-plot_CRS(solution_thetas)
+# #elbow down
+# solution_thetas = CRS_invk(p_des=[0.3, -0.3, 0.254], q_init=[0, 0, 1])
+# plot_CRS(solution_thetas)
 
-#elbow up
-solution_thetas = CRS_invk(p_des=[0.3, -0.3, 0.254], q_init=[0, 0, -1])
-plot_CRS(solution_thetas)
+# #elbow up
+# solution_thetas = CRS_invk(p_des=[0.3, -0.3, 0.254], q_init=[0, 0, -1])
+# plot_CRS(solution_thetas)
