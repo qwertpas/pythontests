@@ -4,7 +4,7 @@
 
 int main(){
 
-    //Joystick joint angles (input)
+    //Joystick right joint angles (input)
     float th_j1 = 0.764;
     float th_j2 = -0.570;
     float th_j3 = 0.474;
@@ -17,7 +17,7 @@ int main(){
     float L_joy_arm = 0.313; //upper arm length
     float L_joy_forearm = 0.339; //lower arm length
     float L_joy_hand = 0.078; //width of the hand that goes inwards
-    float L_sat_shoulder_from_body = 0.18;
+    float L_sat_shoulder_from_body = 0.120;
     float L_sat_forearm = 0.2115;
     float L_sat_arm = 0.11945;
 
@@ -84,6 +84,7 @@ int main(){
         th_s4 *= -1;
     }
 
+    //Satyrr right arm joint angles (output)
     std::cout << th_s1 << std::endl;
     std::cout << th_s2 << std::endl;
     std::cout << th_s3 << std::endl;

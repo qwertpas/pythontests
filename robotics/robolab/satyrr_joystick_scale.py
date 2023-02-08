@@ -29,7 +29,7 @@ joy_right_shoulder = np.array([0, -L_shoulder_from_body-L_shoulder_y, 0])
 
 L_sat_forearm = 0.2115
 L_sat_arm = 0.11945
-L_sat_shoulder_from_body = 0.18
+L_sat_shoulder_from_body = 0.120
 sat_right_shoulder = np.array([0, -L_sat_shoulder_from_body, 0])
 
 
