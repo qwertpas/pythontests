@@ -217,10 +217,10 @@ void map_lw(float th_j1, float th_j2, float th_j3, float th_j4){
 
 int main(){
 
-    for(int i1=-0.5; i1<=0.5; i1+=0.1){
-        for(int i2=-0.5; i2<=0.5; i2+=0.1){
-            for(int i3=-0.5; i3<=0.5; i3+=0.1){
-                for(int i4=-0.5; i4<=0.5; i4+=0.1){
+    for(float i1=-0.5; i1<=0.5; i1+=0.2){
+        for(float i2=-0.5; i2<=0.5; i2+=0.2){
+            for(float i3=-0.5; i3<=0.5; i3+=0.2){
+                for(float i4=-0.5; i4<=0.5; i4+=0.2){
                     //right arm
                     // Vector4d thetas_joy(0.826, -0.594, -0.846, -1.358);
                     Vector4d thetas_joy(i1, i2, i3, i4);
@@ -233,9 +233,12 @@ int main(){
                     std::cout << thetas_sat(2) << std::endl;
                     std::cout << thetas_sat(3) << std::endl;
 
-                    std:cout << "-----" << std::endl;
+                    std::cout << "-----" << std::endl;
 
                     map_lw(thetas_joy[0], thetas_joy[1], thetas_joy[2], thetas_joy[3]);
+
+                    std::cout << "=========" << std::endl;
+
                 }
             }
         }
