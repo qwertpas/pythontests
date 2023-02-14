@@ -43,6 +43,21 @@ int main(){
     joy_eff[10] = c2*c34;
     joy_eff[11] = -L_joy_arm*c2*c3 - L_joy_forearm*c2*c34 + L_joy_hand*s2 - L_joy_shoulder_y*s2;
 
+    /**
+    joy_eff[0] = -sin(th_j1)*sin(th_j2)*sin(th_j3 - th_j4) + cos(th_j1)*cos(th_j3 - th_j4);
+    joy_eff[1] = -sin(th_j1)*cos(th_j2);
+    joy_eff[2] = sin(th_j1)*sin(th_j2)*cos(th_j3 - th_j4) + sin(th_j3 - th_j4)*cos(th_j1);
+    joy_eff[3] = -L_joy_arm*sin(th_j1)*sin(th_j2)*cos(th_j3 - th_j4) - L_joy_arm*sin(th_j3 - th_j4)*cos(th_j1) - L_joy_forearm*sin(th_j1)*sin(th_j2)*cos(th_j3 - th_j4) - L_joy_forearm*sin(th_j3 - th_j4)*cos(th_j1) - L_joy_hand*sin(th_j1)*cos(th_j2) + L_joy_shoulder_from_body*sin(th_j1) - L_joy_shoulder_x*sin(th_j1)*sin(th_j2)*sin(th_j3) + L_joy_shoulder_x*cos(th_j1)*cos(th_j3) + L_joy_shoulder_y*sin(th_j1)*cos(th_j2);
+    joy_eff[4] = sin(th_j1)*cos(th_j3 - th_j4) + sin(th_j2)*sin(th_j3 - th_j4)*cos(th_j1);
+    joy_eff[5] = cos(th_j1)*cos(th_j2);
+    joy_eff[6] = sin(th_j1)*sin(th_j3 - th_j4) - sin(th_j2)*cos(th_j1)*cos(th_j3 - th_j4);
+    joy_eff[7] = -L_joy_arm*sin(th_j1)*sin(th_j3 - th_j4) + L_joy_arm*sin(th_j2)*cos(th_j1)*cos(th_j3 - th_j4) - L_joy_forearm*sin(th_j1)*sin(th_j3 - th_j4) + L_joy_forearm*sin(th_j2)*cos(th_j1)*cos(th_j3 - th_j4) + L_joy_hand*cos(th_j1)*cos(th_j2) - L_joy_shoulder_from_body*cos(th_j1) + L_joy_shoulder_x*sin(th_j1)*cos(th_j3) + L_joy_shoulder_x*sin(th_j2)*sin(th_j3)*cos(th_j1) - L_joy_shoulder_y*cos(th_j1)*cos(th_j2);
+    joy_eff[8] = -sin(th_j3 - th_j4)*cos(th_j2);
+    joy_eff[9] = sin(th_j2);
+    joy_eff[10] = cos(th_j2)*cos(th_j3 - th_j4);
+    joy_eff[11] = -L_joy_arm*cos(th_j2)*cos(th_j3 - th_j4) - L_joy_forearm*cos(th_j2)*cos(th_j3 - th_j4) + L_joy_hand*sin(th_j2) - L_joy_shoulder_x*sin(th_j3)*cos(th_j2) - L_joy_shoulder_y*sin(th_j2);
+    */
+
     //Direction of satyrr's elbow
     float sat_elb_dir[3];
     sat_elb_dir[0] = L_joy_forearm*joy_eff[2] - L_joy_shoulder_x + joy_eff[3];
