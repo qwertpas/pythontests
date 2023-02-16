@@ -134,8 +134,8 @@ def plot_CRS(thetas, theta_dots):
     plt.show()
 
 ''' HW3 1(d) '''
-# plot_CRS(thetas=[0, 0, 0], theta_dots=[0, 0, 1])
-# plot_CRS(thetas=[0, 0, pi/2], theta_dots=[1, 1, 0])
+plot_CRS(thetas=[0, 0, 0], theta_dots=[0, 0, 1])
+plot_CRS(thetas=[0, 0, pi/2], theta_dots=[1, 1, 0])
 
 ''' HW3 1(e) '''
 th1_num, th2_num, th3_num = [pi/6, -pi/4, pi/2]
