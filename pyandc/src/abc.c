@@ -286,8 +286,8 @@ int main(int argc, char const *argv[])
 
         uint8_t angle_lut = (uint8_t) (i / TWO_PI_F * 255);
 
-        int16_t V_d = 0;
-        int16_t V_q = 2000;
+        int16_t V_d = 32767;
+        int16_t V_q = 32767;
 
 
         //each term below has 16 fractional bits and is signed
@@ -316,7 +316,7 @@ int main(int argc, char const *argv[])
 
 
         //compare:
-        printf("%f  %d %d %d  %d %d %d  %f\n", i, V_u, V_v, V_w, (int)V_u_f, (int)V_v_f, (int)V_w_f, V_w-V_w_f);
+        printf("%f  %d %d %d  %d %d %d  %f\n", i, V_u, V_v, V_w, (int32_t)V_u_f, (int32_t)V_v_f, (int32_t)V_w_f, V_w-V_w_f);
     
     }
 
