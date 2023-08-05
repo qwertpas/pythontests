@@ -29,5 +29,5 @@ print(df)
 rms_error = np.sqrt((df["V_w-V_w_f"] ** 2).mean())
 print(rms_error)
 
-df.plot()
+df.plot(marker='o')
 plt.show()

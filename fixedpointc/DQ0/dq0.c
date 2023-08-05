@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
+
 
 #define Q16_2_3 ((uint16_t) 43691) 		// (2/3) * 2^16
 #define Q16_SQRT3_2 ((uint16_t) 56756) 	// (sqrt(3)) * 2^16
@@ -271,13 +273,11 @@ static const int16_t sin_lut[] = { //sine wave with 256 values from -32,768 to 3
 };
 
 
-int16_t V_u;
-int16_t V_v;
-int16_t V_w;
+int16_t I_d;
+int16_t I_q;
 
-float V_u_f;
-float V_v_f;
-float V_w_f;
+float I_d_f;
+float I_q_f;
 
 int main(int argc, char const *argv[])
 {
@@ -285,25 +285,37 @@ int main(int argc, char const *argv[])
 
     for(float i=0; i < TWO_PI_F; i+=0.1){
 
+        // int16_t I_u = (uint16_t) (2048 * sin(i)); 
+        // int16_t I_v = (uint16_t) (2048 * sin(i - 2.09439f)); 
+        // int16_t I_w = (uint16_t) (2048 * sin(i - 4.18879f));
+        
+        srand(time(NULL)); //constant seed for sinusoids
+        int16_t I_u = (rand() % 32768);
+        int16_t I_v = (rand() % 32768);
+        int16_t I_w = (rand() % 32768);
+
         uint8_t angle_lut = (uint8_t) (i / TWO_PI_F * 255);
 
-        int16_t V_d = 27700; //max seems to be 27899
-        int16_t V_q = 1<<14;
-
-
-        //each term below has 16 fractional bits and is signed
+        //each term below has 15 fractional bits and is signed, floating point equilvalent < 1
         int16_t Q16_sin_t = sin_lut[angle_lut];
-        int16_t Q16_cos_t = sin_lut[(64 - angle_lut) & (256 - 1)]; //64 out of 256 is the equilvalent of 90º/360º. Modulo 256.
+        int16_t Q16_cos_t;
+        if(angle_lut < 64){
+            Q16_cos_t = sin_lut[(64 - angle_lut) & (256 - 1)];
+        }else{
+            Q16_cos_t = sin_lut[(63 - angle_lut) & (256 - 1)];
+        }
+        // int16_t Q16_cos_t = sin_lut[(63 - angle_lut) & (256 - 1)]; //64 out of 256 is the equilvalent of 90º/360º. Modulo 256.
 
-        //Convert DQ voltages to phase voltages
-        int32_t tmp_v1 = (( Q16_SQRT3_2 * Q16_sin_t) >> 15) - ((Q16_1_2 * Q16_cos_t) >> 15);
-        int32_t tmp_v2 = ((-Q16_SQRT3_2 * Q16_cos_t) >> 15) - ((Q16_1_2 * Q16_sin_t) >> 15);
-        int32_t tmp_w1 = ((-Q16_SQRT3_2 * Q16_sin_t) >> 15) - ((Q16_1_2 * Q16_cos_t) >> 15);
-        int32_t tmp_w2 = (( Q16_SQRT3_2 * Q16_cos_t) >> 15) - ((Q16_1_2 * Q16_sin_t) >> 15);
+        //some intermediate rounding, final errors in Iq and Id are around 1%
+        int16_t Q16_SQRT3_2_sin_t = (Q16_SQRT3_2*Q16_sin_t) >> 16;
+        int16_t Q16_SQRT3_2_cos_t = (Q16_SQRT3_2*Q16_cos_t) >> 16;
+        int16_t Q16_1_2_sin_t = (Q16_1_2*Q16_sin_t) >> 16;
+        int16_t Q16_1_2_cos_t = (Q16_1_2*Q16_cos_t) >> 16;
 
-        V_u = (Q16_cos_t * V_d - Q16_sin_t * V_q) >> 15;
-        V_v = (tmp_v1 * V_d - tmp_v2 * V_q) >> 16;
-        V_w = (tmp_w1 * V_d - tmp_w2 * V_q) >> 16;
+        I_d = ( Q16_cos_t*I_u + ( Q16_SQRT3_2_sin_t - Q16_1_2_cos_t)*I_v + (-Q16_SQRT3_2_sin_t - Q16_1_2_cos_t)*I_w) >> 15;
+        I_d = (I_d * Q16_2_3) >> 16;
+        I_q = ( Q16_sin_t*I_u + (-Q16_SQRT3_2_cos_t - Q16_1_2_sin_t)*I_v + ( Q16_SQRT3_2_cos_t - Q16_1_2_sin_t)*I_w) >> 15;
+        I_q = (I_q * -Q16_2_3) >> 16;
 
 
         //FLOATING POINT FOR REFERNCE
@@ -311,17 +323,15 @@ int main(int argc, char const *argv[])
         float sf = sin(angle_f);
         float cf = cos(angle_f);
 
-        V_u_f = cf*V_d - sf*V_q;
-        V_v_f = (SQRT3_2*sf-.5f*cf)*V_d - (-SQRT3_2*cf-.5f*sf)*V_q;
-        V_w_f = (-SQRT3_2*sf-.5f*cf)*V_d - (SQRT3_2*cf-.5f*sf)*V_q;
-
+        float I_d_f = 0.6666667f*(cf*I_u + (SQRT3_2*sf-.5f*cf)*I_v + (-SQRT3_2*sf-.5f*cf)*I_w);   ///Faster DQ0 Transform
+        float I_q_f = 0.6666667f*(-sf*I_u - (-SQRT3_2*cf-.5f*sf)*I_v - (SQRT3_2*cf-.5f*sf)*I_w);
 
         //compare:
         if(!init){
             init = true;
-            printf("V_u, V_v, V_w, (int32_t)V_u_f, (int32_t)V_v_f, (int32_t)V_w_f, V_w-V_w_f \n");
+            printf("Q16_sin_t, Q16_cos_t, I_d, I_q, 32768*sf, 32768*cf, I_d_f, I_q_f, errId, errIq \n");
         }
-        printf("%d, %d, %d, %d, %d, %d, %f \n",     V_u, V_v, V_w, (int32_t)V_u_f, (int32_t)V_v_f, (int32_t)V_w_f, V_w-V_w_f);
+        printf("%d, %d, %d, %d, %f, %f, %f, %f, %f, %f \n", Q16_sin_t, Q16_cos_t, I_d, I_q, 32768*sf, 32768*cf, I_d_f, I_q_f, I_d-I_d_f, I_q-I_q_f);
     }
 
 
