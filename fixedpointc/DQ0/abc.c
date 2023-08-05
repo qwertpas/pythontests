@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <iostream>
+#include <math.h>
 
 #define Q16_2_3 ((uint16_t) 43691) 		// (2/3) * 2^16
-#define Q16_SQRT3_2 ((uint16_t) 56756) 	// (sqrt(3)/2) * 2^16
-#define Q16_1_2 ((uint16_t) 32768) 		// (1/2) * 2^16
+#define Q16_SQRT3_2 ((uint16_t) 56756) 	// (sqrt(3)) * 2^16
+#define Q16_1_2 ((uint16_t) 32768) 		// (1) * 2^16
 
 #define SQRT3 		1.73205080757f
 #define SQRT3_2 	0.86602540378f
@@ -281,13 +281,14 @@ float V_w_f;
 
 int main(int argc, char const *argv[])
 {
-    
+    int init = false; 
+
     for(float i=0; i < TWO_PI_F; i+=0.1){
 
         uint8_t angle_lut = (uint8_t) (i / TWO_PI_F * 255);
 
-        int16_t V_d = 32767;
-        int16_t V_q = 32767;
+        int16_t V_d = 27700; //max seems to be 27899
+        int16_t V_q = 1<<14;
 
 
         //each term below has 16 fractional bits and is signed
@@ -295,14 +296,14 @@ int main(int argc, char const *argv[])
         int16_t Q16_cos_t = sin_lut[(64 - angle_lut) & (256 - 1)]; //64 out of 256 is the equilvalent of 90º/360º. Modulo 256.
 
         //Convert DQ voltages to phase voltages
-        int32_t tmp_v1 = ( Q16_SQRT3_2/2 * Q16_sin_t - Q16_1_2/2 * Q16_cos_t) >> 15;
-        int32_t tmp_v2 = (-Q16_SQRT3_2/2 * Q16_cos_t - Q16_1_2/2 * Q16_sin_t) >> 15;
-        int32_t tmp_w1 = (-Q16_SQRT3_2/2 * Q16_sin_t - Q16_1_2/2 * Q16_cos_t) >> 15;
-        int32_t tmp_w2 = ( Q16_SQRT3_2/2 * Q16_cos_t - Q16_1_2/2 * Q16_sin_t) >> 15;
+        int32_t tmp_v1 = (( Q16_SQRT3_2 * Q16_sin_t) >> 15) - ((Q16_1_2 * Q16_cos_t) >> 15);
+        int32_t tmp_v2 = ((-Q16_SQRT3_2 * Q16_cos_t) >> 15) - ((Q16_1_2 * Q16_sin_t) >> 15);
+        int32_t tmp_w1 = ((-Q16_SQRT3_2 * Q16_sin_t) >> 15) - ((Q16_1_2 * Q16_cos_t) >> 15);
+        int32_t tmp_w2 = (( Q16_SQRT3_2 * Q16_cos_t) >> 15) - ((Q16_1_2 * Q16_sin_t) >> 15);
 
         V_u = (Q16_cos_t * V_d - Q16_sin_t * V_q) >> 15;
-        V_v = (tmp_v1 * V_d - tmp_v2 * V_q) >> 15;
-        V_w = (tmp_w1 * V_d - tmp_w2 * V_q) >> 15;
+        V_v = (tmp_v1 * V_d - tmp_v2 * V_q) >> 16;
+        V_w = (tmp_w1 * V_d - tmp_w2 * V_q) >> 16;
 
 
         //FLOATING POINT FOR REFERNCE
@@ -316,8 +317,11 @@ int main(int argc, char const *argv[])
 
 
         //compare:
-        printf("%f  %d %d %d  %d %d %d  %f\n", i, V_u, V_v, V_w, (int32_t)V_u_f, (int32_t)V_v_f, (int32_t)V_w_f, V_w-V_w_f);
-    
+        if(!init){
+            init = true;
+            printf("V_u, V_v, V_w, (int32_t)V_u_f, (int32_t)V_v_f, (int32_t)V_w_f, V_w-V_w_f \n");
+        }
+        printf("%d, %d, %d, %d, %d, %d, %f \n",     V_u, V_v, V_w, (int32_t)V_u_f, (int32_t)V_v_f, (int32_t)V_w_f, V_w-V_w_f);
     }
 
 
