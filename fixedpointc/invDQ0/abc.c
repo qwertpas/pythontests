@@ -285,12 +285,13 @@ int main(int argc, char const *argv[])
 {
     int init = false; 
 
+    srand(time(NULL)); //constant seed for sinusoids    
 
-    for(float i=0; i < TWO_PI_F; i+=0.1){
+
+
+    for(float i=0; i < TWO_PI_F; i+=0.01){
 
         uint8_t angle_lut = (uint8_t) (i / TWO_PI_F * 255);
-
-        // srand(time(NULL)); //constant seed for sinusoids
 
         int16_t V_d = (rand() % 32768);
         int16_t V_q = (rand() % 32768);
@@ -308,15 +309,20 @@ int main(int argc, char const *argv[])
             Q16_cos_t = sin_lut[(63 - angle_lut) & (256 - 1)];
         }
 
-        //Convert DQ voltages to phase voltages
-        int32_t tmp_v1 = (( Q16_SQRT3_2 * Q16_sin_t) >> 16) - ((Q16_1_2 * Q16_cos_t) >> 16);
-        int32_t tmp_v2 = ((-Q16_SQRT3_2 * Q16_cos_t) >> 16) - ((Q16_1_2 * Q16_sin_t) >> 16);
-        int32_t tmp_w1 = ((-Q16_SQRT3_2 * Q16_sin_t) >> 16) - ((Q16_1_2 * Q16_cos_t) >> 16);
-        int32_t tmp_w2 = (( Q16_SQRT3_2 * Q16_cos_t) >> 16) - ((Q16_1_2 * Q16_sin_t) >> 16);
+        //Convert DQ voltages to phase voltages, accuracy around 0.4%
+        // int32_t tmp_v1 = (( Q16_SQRT3_2 * Q16_sin_t) >> 16) - ((Q16_1_2 * Q16_cos_t) >> 16);
+        // int32_t tmp_v2 = ((-Q16_SQRT3_2 * Q16_cos_t) >> 16) - ((Q16_1_2 * Q16_sin_t) >> 16);
+        // int32_t tmp_w1 = ((-Q16_SQRT3_2 * Q16_sin_t) >> 16) - ((Q16_1_2 * Q16_cos_t) >> 16);
+        // int32_t tmp_w2 = (( Q16_SQRT3_2 * Q16_cos_t) >> 16) - ((Q16_1_2 * Q16_sin_t) >> 16);
+
+        int32_t Q16_SQRT3_2_sin = (Q16_SQRT3_2 * Q16_sin_t) >> 16;
+        int32_t Q16_SQRT3_2_cos = (Q16_SQRT3_2 * Q16_cos_t) >> 16;
+        int32_t Q16_1_2_sin = (Q16_1_2 * Q16_sin_t) >> 16;
+        int32_t Q16_1_2_cos = (Q16_1_2 * Q16_cos_t) >> 16;
 
         V_u = (Q16_cos_t * V_d - Q16_sin_t * V_q) >> 15;
-        V_v = (tmp_v1 * V_d - tmp_v2 * V_q) >> 15;
-        V_w = (tmp_w1 * V_d - tmp_w2 * V_q) >> 15;
+        V_v = ( (Q16_SQRT3_2_sin - Q16_1_2_cos) * V_d + (Q16_SQRT3_2_cos + Q16_1_2_sin) * V_q) >> 15;
+        V_w = (-(Q16_SQRT3_2_sin + Q16_1_2_cos) * V_d - (Q16_SQRT3_2_cos - Q16_1_2_sin) * V_q) >> 15;
 
 
         //FLOATING POINT FOR REFERNCE
