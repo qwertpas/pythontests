@@ -30,9 +30,9 @@ rms_err_d = np.sqrt((df["errId"] ** 2).mean())
 rms_err_q = np.sqrt((df["errIq"] ** 2).mean())
 print(rms_err_d, rms_err_q)
 
-df.plot(marker='o')
+df.plot(marker='o', markersize=1, linewidth=1)
 
-plt.plot(df.index, df['errIq'], label='errIq')
-plt.plot(df.index, df['errId'], label='errId')
+plt.plot(df.index, df['errIq'], label='errIq', markersize=1)
+plt.plot(df.index, df['errId'], label='errId', markersize=1)
 plt.legend()
 plt.show()

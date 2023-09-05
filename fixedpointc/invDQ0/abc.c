@@ -309,20 +309,15 @@ int main(int argc, char const *argv[])
             Q16_cos_t = sin_lut[(63 - angle_lut) & (256 - 1)];
         }
 
+        int32_t Q16_SQRT3_2_sin_t = (Q16_SQRT3_2 * Q16_sin_t) >> 16;
+        int32_t Q16_SQRT3_2_cos_t = (Q16_SQRT3_2 * Q16_cos_t) >> 16;
+        int32_t Q16_1_2_sin_t = (Q16_1_2 * Q16_sin_t) >> 16;
+        int32_t Q16_1_2_cos_t = (Q16_1_2 * Q16_cos_t) >> 16;
+
         //Convert DQ voltages to phase voltages, accuracy around 0.4%
-        // int32_t tmp_v1 = (( Q16_SQRT3_2 * Q16_sin_t) >> 16) - ((Q16_1_2 * Q16_cos_t) >> 16);
-        // int32_t tmp_v2 = ((-Q16_SQRT3_2 * Q16_cos_t) >> 16) - ((Q16_1_2 * Q16_sin_t) >> 16);
-        // int32_t tmp_w1 = ((-Q16_SQRT3_2 * Q16_sin_t) >> 16) - ((Q16_1_2 * Q16_cos_t) >> 16);
-        // int32_t tmp_w2 = (( Q16_SQRT3_2 * Q16_cos_t) >> 16) - ((Q16_1_2 * Q16_sin_t) >> 16);
-
-        int32_t Q16_SQRT3_2_sin = (Q16_SQRT3_2 * Q16_sin_t) >> 16;
-        int32_t Q16_SQRT3_2_cos = (Q16_SQRT3_2 * Q16_cos_t) >> 16;
-        int32_t Q16_1_2_sin = (Q16_1_2 * Q16_sin_t) >> 16;
-        int32_t Q16_1_2_cos = (Q16_1_2 * Q16_cos_t) >> 16;
-
         V_u = (Q16_cos_t * V_d - Q16_sin_t * V_q) >> 15;
-        V_v = ( (Q16_SQRT3_2_sin - Q16_1_2_cos) * V_d + (Q16_SQRT3_2_cos + Q16_1_2_sin) * V_q) >> 15;
-        V_w = (-(Q16_SQRT3_2_sin + Q16_1_2_cos) * V_d - (Q16_SQRT3_2_cos - Q16_1_2_sin) * V_q) >> 15;
+        V_v = ( (Q16_SQRT3_2_sin_t - Q16_1_2_cos_t) * V_d + (Q16_SQRT3_2_cos_t + Q16_1_2_sin_t) * V_q) >> 15;
+        V_w = (-(Q16_SQRT3_2_sin_t + Q16_1_2_cos_t) * V_d - (Q16_SQRT3_2_cos_t - Q16_1_2_sin_t) * V_q) >> 15;
 
 
         //FLOATING POINT FOR REFERNCE

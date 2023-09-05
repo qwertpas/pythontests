@@ -283,17 +283,17 @@ int main(int argc, char const *argv[])
 {
     int init = false; 
 
-    srand(time(NULL)); //constant seed for sinusoids
+    // srand(time(NULL)); //constant seed for sinusoids
 
-    for(float i=0; i < TWO_PI_F; i+=0.1){
+    for(float i=0; i < TWO_PI_F; i+=0.01){
 
-        // int16_t I_u = (uint16_t) (2048 * sin(i)); 
-        // int16_t I_v = (uint16_t) (2048 * sin(i - 2.09439f)); 
-        // int16_t I_w = (uint16_t) (2048 * sin(i - 4.18879f));
+        int16_t I_u = (uint16_t) (2048 * sin(i)); 
+        int16_t I_v = (uint16_t) (2048 * sin(i - 2.09439f)); 
+        int16_t I_w = (uint16_t) (2048 * sin(i - 4.18879f));
         
-        int16_t I_u = (rand() % 32768);
-        int16_t I_v = (rand() % 32768);
-        int16_t I_w = (rand() % 32768);
+        // int16_t I_u = (rand() % 32768);
+        // int16_t I_v = (rand() % 32768);
+        // int16_t I_w = (rand() % 32768);
 
         uint8_t angle_lut = (uint8_t) (i / TWO_PI_F * 255);
 
@@ -307,16 +307,18 @@ int main(int argc, char const *argv[])
         }
         // int16_t Q16_cos_t = sin_lut[(63 - angle_lut) & (256 - 1)]; //64 out of 256 is the equilvalent of 90º/360º. Modulo 256.
 
-        //some intermediate rounding, final errors in Iq and Id are around 0.1%
         int16_t Q16_SQRT3_2_sin_t = (Q16_SQRT3_2*Q16_sin_t) >> 16;
         int16_t Q16_SQRT3_2_cos_t = (Q16_SQRT3_2*Q16_cos_t) >> 16;
         int16_t Q16_1_2_sin_t = (Q16_1_2*Q16_sin_t) >> 16;
         int16_t Q16_1_2_cos_t = (Q16_1_2*Q16_cos_t) >> 16;
 
+        //some intermediate rounding, final errors in Iq and Id are around 0.1%
         I_d = ( Q16_cos_t*I_u + ( Q16_SQRT3_2_sin_t - Q16_1_2_cos_t)*I_v + (-Q16_SQRT3_2_sin_t - Q16_1_2_cos_t)*I_w) >> 16;
         I_d = (I_d * Q16_2_3) >> 15;
         I_q = ( Q16_sin_t*I_u + (-Q16_SQRT3_2_cos_t - Q16_1_2_sin_t)*I_v + ( Q16_SQRT3_2_cos_t - Q16_1_2_sin_t)*I_w) >> 16;
         I_q = (I_q * -Q16_2_3) >> 15;
+
+
 
 
         //FLOATING POINT FOR REFERNCE
