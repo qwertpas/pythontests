@@ -93,7 +93,7 @@ def plot_satyrr(ax, thetas):
     
     ax.scatter3D(0, 0, 0, c='orange')
     ax.set_title(thetas)
-    # ax.plot3D(points[0], points[1], points[2])
+    ax.plot3D(points[0], points[1], points[2])
 
     cube_definition = [
         (-L_b/2, -L_b/2, -0.1), (0-L_b/2,L_b-L_b/2,0-0.1), (L_b-L_b/2,0-L_b/2,0-0.1), (0-L_b/2,0-L_b/2,0.2-0.1)
