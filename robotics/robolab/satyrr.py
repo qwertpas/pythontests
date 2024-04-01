@@ -92,7 +92,7 @@ def plot_satyrr(ax, thetas):
     points = np.array([p_shoulder, p_shoulder2, p_shoulder3, p_elbow, p_end]).T
     
     ax.scatter3D(0, 0, 0, c='orange')
-    ax.set_title(thetas)
+    # ax.set_title(thetas)
     ax.plot3D(points[0], points[1], points[2])
 
     cube_definition = [

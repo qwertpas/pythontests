@@ -73,7 +73,7 @@ if __name__ == "__main__":
     intrinsic_camera = np.array(((933.15867, 0, 657.59), (0, 933.1586, 400.36993), (0, 0, 1)))
     distortion = np.array((-0.43948, 0.18514, 0, 0))
 
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     while cap.isOpened():
         ret, image = cap.read()
