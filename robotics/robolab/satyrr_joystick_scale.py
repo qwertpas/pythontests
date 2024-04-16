@@ -116,7 +116,7 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     R_elbow, p_elbow = extract_R_p_from_transformation(T_elbow)
     R_end, p_end = extract_R_p_from_transformation(T_end)
 
-    print("end effector ", T_end)
+    # print("end effector ", T_end)
 
 
     # p_sat_elb = satyrr_joystick_invk(R_end, p_end)
@@ -126,7 +126,7 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     # p_joy_elb = p_joy_end - L_sat_forearm * ang_joy_end
     # p_joy_elb = p_joy_end 
     p_sat_elb = L_sat_arm * normalize(p_joy_elb)
-    print('p_sat_elb', p_sat_elb)
+    # print('p_sat_elb', p_sat_elb)
 
     plot_frame(ax, np.eye(3), p_joy_elb, lengths=0.5)
 
@@ -161,8 +161,8 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     # if(result_thetas[3] > -0.41):
     #     result_thetas[3] -= 0.41*2
 
-    print("R_sphere ", R_sphere)
-    print("result_thetas ", result_thetas)
+    # print("R_sphere ", R_sphere)
+    # print("result_thetas ", result_thetas)
 
     # print(degrees(result_thetas))
 
@@ -171,7 +171,35 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
 
     plot_satyrr(ax, result_thetas)
 
-    # for i in range(len(result_thetas)):
+    Jc_R = np.zeros((3,4))
+    th1_arm = result_thetas[0]
+    th2_arm = result_thetas[1]
+    th3_arm = result_thetas[2]
+    th4_arm = result_thetas[3]
+    Jc_R[0][0] = 0.21144060406275340674442375643594*sin(th4_arm)*(cos(th3_arm)*sin(th1_arm) - 1.0*cos(th1_arm)*sin(th2_arm)*sin(th3_arm)) - 0.00414*sin(th1_arm) - 0.11945*cos(th1_arm)*cos(th2_arm) + 0.046167919236689778546001150516531*cos(th4_arm)*(cos(th3_arm)*sin(th1_arm) - 1.0*cos(th1_arm)*sin(th2_arm)*sin(th3_arm)) - 0.21144060406275340674442375643594*cos(th1_arm)*cos(th2_arm)*cos(th4_arm) + 0.046167919236689778546001150516531*cos(th1_arm)*cos(th2_arm)*sin(th4_arm);
+    Jc_R[0][1] = 0.11945*sin(th1_arm)*sin(th2_arm) + 0.21144060406275340674442375643594*cos(th4_arm)*sin(th1_arm)*sin(th2_arm) - 0.046167919236689778546001150516531*sin(th1_arm)*sin(th2_arm)*sin(th4_arm) - 0.046167919236689778546001150516531*cos(th2_arm)*cos(th4_arm)*sin(th1_arm)*sin(th3_arm) - 0.21144060406275340674442375643594*cos(th2_arm)*sin(th1_arm)*sin(th3_arm)*sin(th4_arm);
+    Jc_R[0][2] = 0.21144060406275340674442375643594*sin(th4_arm)*(cos(th1_arm)*sin(th3_arm) - 1.0*cos(th3_arm)*sin(th1_arm)*sin(th2_arm)) + 0.046167919236689778546001150516531*cos(th4_arm)*(cos(th1_arm)*sin(th3_arm) - 1.0*cos(th3_arm)*sin(th1_arm)*sin(th2_arm));
+    Jc_R[0][3] = 0.046167919236689778546001150516531*sin(th4_arm)*(cos(th1_arm)*cos(th3_arm) + sin(th1_arm)*sin(th2_arm)*sin(th3_arm)) - 0.21144060406275340674442375643594*cos(th4_arm)*(cos(th1_arm)*cos(th3_arm) + sin(th1_arm)*sin(th2_arm)*sin(th3_arm)) + 0.21144060406275340674442375643594*cos(th2_arm)*sin(th1_arm)*sin(th4_arm) + 0.046167919236689778546001150516531*cos(th2_arm)*cos(th4_arm)*sin(th1_arm);
+
+    Jc_R[1][0] = 0;
+    Jc_R[1][1] = 0.11945*cos(th2_arm) + 0.21144060406275340674442375643594*cos(th2_arm)*cos(th4_arm) - 0.046167919236689778546001150516531*cos(th2_arm)*sin(th4_arm) + 0.046167919236689778546001150516531*cos(th4_arm)*sin(th2_arm)*sin(th3_arm) + 0.21144060406275340674442375643594*sin(th2_arm)*sin(th3_arm)*sin(th4_arm);
+    Jc_R[1][2] = -0.046167919236689778546001150516531*cos(th2_arm)*cos(th3_arm)*cos(th4_arm) - 0.21144060406275340674442375643594*cos(th2_arm)*cos(th3_arm)*sin(th4_arm);
+    Jc_R[1][3] = 0.046167919236689778546001150516531*cos(th2_arm)*sin(th3_arm)*sin(th4_arm) - 0.21144060406275340674442375643594*sin(th2_arm)*sin(th4_arm) - 0.046167919236689778546001150516531*cos(th4_arm)*sin(th2_arm) - 0.21144060406275340674442375643594*cos(th2_arm)*cos(th4_arm)*sin(th3_arm);
+
+    Jc_R[2][0] = 0.11945*cos(th2_arm)*sin(th1_arm) - 0.00414*cos(th1_arm) + 0.046167919236689778546001150516531*cos(th4_arm)*(cos(th1_arm)*cos(th3_arm) + sin(th1_arm)*sin(th2_arm)*sin(th3_arm)) + 0.21144060406275340674442375643594*sin(th4_arm)*(cos(th1_arm)*cos(th3_arm) + sin(th1_arm)*sin(th2_arm)*sin(th3_arm)) - 0.046167919236689778546001150516531*cos(th2_arm)*sin(th1_arm)*sin(th4_arm) + 0.21144060406275340674442375643594*cos(th2_arm)*cos(th4_arm)*sin(th1_arm);
+    Jc_R[2][1] = 0.11945*cos(th1_arm)*sin(th2_arm) - 0.046167919236689778546001150516531*cos(th1_arm)*sin(th2_arm)*sin(th4_arm) + 0.21144060406275340674442375643594*cos(th1_arm)*cos(th4_arm)*sin(th2_arm) - 0.046167919236689778546001150516531*cos(th1_arm)*cos(th2_arm)*cos(th4_arm)*sin(th3_arm) - 0.21144060406275340674442375643594*cos(th1_arm)*cos(th2_arm)*sin(th3_arm)*sin(th4_arm);
+    Jc_R[2][2] = -0.046167919236689778546001150516531*cos(th4_arm)*(sin(th1_arm)*sin(th3_arm) + cos(th1_arm)*cos(th3_arm)*sin(th2_arm)) - 0.21144060406275340674442375643594*sin(th4_arm)*(sin(th1_arm)*sin(th3_arm) + cos(th1_arm)*cos(th3_arm)*sin(th2_arm));
+    Jc_R[2][3] = 0.21144060406275340674442375643594*cos(th4_arm)*(cos(th3_arm)*sin(th1_arm) - 1.0*cos(th1_arm)*sin(th2_arm)*sin(th3_arm)) - 0.046167919236689778546001150516531*sin(th4_arm)*(cos(th3_arm)*sin(th1_arm) - 1.0*cos(th1_arm)*sin(th2_arm)*sin(th3_arm)) + 0.046167919236689778546001150516531*cos(th1_arm)*cos(th2_arm)*cos(th4_arm) + 0.21144060406275340674442375643594*cos(th1_arm)*cos(th2_arm)*sin(th4_arm);
+
+    # print(Jc_R)
+
+    P = np.eye(4,4) - np.linalg.pinv(Jc_R)@Jc_R
+
+    tau_task2 = np.array([1,2,3,4])
+    
+    print("projectedtau2", P@tau_task2)
+    print("should be 0", Jc_R@(P@tau_task2))
+    # for i in range(len(result_thetas)): #bar plots for joint angles
     #     plot_link(ax, np.eye(3), p=(0.3+0.05*i, 0, 0), size=(w,w,0.4/pi*result_thetas[i]))
 
 
