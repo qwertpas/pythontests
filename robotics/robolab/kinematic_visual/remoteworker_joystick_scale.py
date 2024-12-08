@@ -8,7 +8,7 @@ sys.path.insert(0, dir+'/../')   #allow imports from parent directory
 
 from util import *
 from plotcube import *
-from satyrr import plot_satyrr
+from remoteworker import plot_satyrr
 
 
 
@@ -28,7 +28,7 @@ joy_right_shoulder = np.array([0, -L_shoulder_from_body-L_shoulder_y, 0])
 
 
 L_sat_forearm = 0.2115
-L_sat_arm = 0.11945
+L_sat_arm = 0.290
 L_sat_shoulder_from_body = 0.120
 sat_right_shoulder = np.array([0, -L_sat_shoulder_from_body, 0])
 
@@ -109,7 +109,7 @@ p_joy_elb = np.zeros(3)
 fig, ax = init_3d_plot(size=(10,9), cube_lim=0.05)    
 
 
-def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
+def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end, thetas):
     R_shoulder, p_shoulder = extract_R_p_from_transformation(T_shoulder)
     R_shoulder2, p_shoulder2 = extract_R_p_from_transformation(T_shoulder2)
     R_shoulder3, p_shoulder3 = extract_R_p_from_transformation(T_shoulder3)
@@ -146,17 +146,20 @@ def plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end):
     #satyrr arm
     # plot_frame(ax, R_end, p_sat_elb + sat_right_shoulder)
 
-    Rz = -normalize(p_sat_elb)
+    # p_sat_elb = rot_xyz('x', radians(60)) @ p_sat_elb
+
+    Rz = -normalize(p_sat_elb) 
     plot_arrow(ax, sat_right_shoulder+p_sat_elb, R_end[:,1]*0.1, color='gray')
     Ry = normalize(R_end[:,1] - Rz*np.dot(R_end[:,1], Rz)) 
     Rx = normalize(cross(Ry, Rz))
+    # R_sphere = np.hstack((Rx.reshape((3,1)), Ry.reshape((3,1)), Rz.reshape((3,1))))
     R_sphere = np.hstack((Rx.reshape((3,1)), Ry.reshape((3,1)), Rz.reshape((3,1))))
-    # R_sphere = np.hstack((Rx.reshape((3,1)), Ry.reshape((3,1)), Rz.reshape((3,1)))) @ rot_xyz('x', radians(60))
     plot_frame(ax, R_sphere, sat_right_shoulder+p_sat_elb, lengths=0.1)
 
     result_thetas = np.zeros(4)
     result_thetas[0:3] = spherical_invk(R_sphere)[0]
-    result_thetas[3] = -ang_betw(R_end[:,2], Rz, axis=Ry)    #angle between -R_end[:,2] and Rz
+    # result_thetas[3] = -ang_betw(R_end[:,2], Rz, axis=Ry)    #angle between -R_end[:,2] and Rz
+    result_thetas[3] = -thetas[3]    #angle between -R_end[:,2] and Rz
 
     # if(result_thetas[3] > -0.41):
     #     result_thetas[3] -= 0.41*2
@@ -237,7 +240,7 @@ def update(val=0):
         thetas.append(slider.val)
     # thetas = [0.826, -0.594, -0.846, -1.358]
     T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end = forward_kinematics(thetas, is_right=True)
-    plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end)
+    plot_arm(T_shoulder, T_shoulder2, T_shoulder3, T_elbow, T_end, thetas)
 
 for slider in sliders:
     slider.on_changed(update)
